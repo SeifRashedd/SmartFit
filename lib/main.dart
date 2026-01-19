@@ -10,7 +10,10 @@ void main() {
   developer.log('[WidgetsFlutterBinding] Initialized', name: 'Main');
 
   // Set preferred orientations
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]).then((_) {
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]).then((_) {
     developer.log('[Main] Preferred orientations set', name: 'Main');
   });
 
@@ -28,7 +31,6 @@ class SmartFitApp extends StatelessWidget {
     return MaterialApp(
       title: 'Smart Fit',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue)),
       home: const GenderView(),
     );
   }

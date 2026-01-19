@@ -15,19 +15,31 @@ class GenderViewModel extends ChangeNotifier {
 
   Future<void> init() async {
     try {
-      developer.log('[GenderViewModel] Initializing view model...', name: 'GenderViewModel');
+      developer.log(
+        '[GenderViewModel] Initializing view model...',
+        name: 'GenderViewModel',
+      );
 
       if (_isInitialized) {
-        developer.log('[GenderViewModel] Already initialized, skipping...', name: 'GenderViewModel');
+        developer.log(
+          '[GenderViewModel] Already initialized, skipping...',
+          name: 'GenderViewModel',
+        );
         return;
       }
 
-      developer.log('[GenderViewModel] Loading ML model...', name: 'GenderViewModel');
+      developer.log(
+        '[GenderViewModel] Loading ML model...',
+        name: 'GenderViewModel',
+      );
       await _service.loadModel();
 
       _isInitialized = true;
       _errorMessage = null;
-      developer.log('[GenderViewModel] View model initialized successfully!', name: 'GenderViewModel');
+      developer.log(
+        '[GenderViewModel] View model initialized successfully!',
+        name: 'GenderViewModel',
+      );
 
       notifyListeners();
     } catch (e, stackTrace) {
@@ -45,25 +57,40 @@ class GenderViewModel extends ChangeNotifier {
 
   Future<void> detectGender(File image) async {
     try {
-      developer.log('[GenderViewModel] Starting gender detection...', name: 'GenderViewModel');
+      developer.log(
+        '[GenderViewModel] Starting gender detection...',
+        name: 'GenderViewModel',
+      );
 
       if (!_isInitialized) {
-        developer.log('[GenderViewModel] WARNING: Not initialized, initializing now...', name: 'GenderViewModel');
+        developer.log(
+          '[GenderViewModel] WARNING: Not initialized, initializing now...',
+          name: 'GenderViewModel',
+        );
         await init();
       }
 
       if (!_isInitialized) {
-        developer.log('[GenderViewModel] ERROR: Failed to initialize model', name: 'GenderViewModel');
+        developer.log(
+          '[GenderViewModel] ERROR: Failed to initialize model',
+          name: 'GenderViewModel',
+        );
         _errorMessage = 'Model not initialized';
         notifyListeners();
         return;
       }
 
-      developer.log('[GenderViewModel] Calling service to predict gender...', name: 'GenderViewModel');
+      developer.log(
+        '[GenderViewModel] Calling service to predict gender...',
+        name: 'GenderViewModel',
+      );
       _errorMessage = null;
-      final result = _service.predictGender(image);
+      final result = await _service.predictGender(image);
 
-      developer.log('[GenderViewModel] Prediction received: ${result['gender']}', name: 'GenderViewModel');
+      developer.log(
+        '[GenderViewModel] Prediction received: ${result['gender']}',
+        name: 'GenderViewModel',
+      );
 
       gender = result['gender'] as String?;
       confidence = result['confidence'] as double?;
@@ -72,10 +99,16 @@ class GenderViewModel extends ChangeNotifier {
         '[GenderViewModel] Gender: $gender, Confidence: ${confidence != null ? (confidence! * 100).toStringAsFixed(2) + "%" : "null"}',
         name: 'GenderViewModel',
       );
-      developer.log('[GenderViewModel] Notifying listeners...', name: 'GenderViewModel');
+      developer.log(
+        '[GenderViewModel] Notifying listeners...',
+        name: 'GenderViewModel',
+      );
 
       notifyListeners();
-      developer.log('[GenderViewModel] Gender detection completed successfully', name: 'GenderViewModel');
+      developer.log(
+        '[GenderViewModel] Gender detection completed successfully',
+        name: 'GenderViewModel',
+      );
     } catch (e, stackTrace) {
       developer.log(
         '[GenderViewModel] ERROR during gender detection: $e',
@@ -83,7 +116,7 @@ class GenderViewModel extends ChangeNotifier {
         error: e,
         stackTrace: stackTrace,
       );
-      _errorMessage = 'Failed to detect gender: $e';
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
       gender = null;
       confidence = null;
       notifyListeners();

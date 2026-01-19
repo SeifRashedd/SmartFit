@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:developer' as developer;
+import 'dart:math' as math;
 import 'package:image/image.dart' as img;
 
-Float32List preprocessImage(File file) {
+Float32List preprocessImage(File file, {math.Rectangle<int>? crop}) {
   try {
     developer.log('[ImagePreprocessor] Starting image preprocessing...', name: 'ImagePreprocessor');
     developer.log('[ImagePreprocessor] File path: ${file.path}', name: 'ImagePreprocessor');
@@ -20,7 +21,24 @@ Float32List preprocessImage(File file) {
       throw Exception('Failed to decode image');
     }
 
+    // Normalize orientation based on EXIF so face boxes match pixel space more reliably.
+    image = img.bakeOrientation(image);
+
     developer.log('[ImagePreprocessor] Original image size: ${image.width}x${image.height}', name: 'ImagePreprocessor');
+
+    if (crop != null) {
+      final safe = _clampRect(crop, image.width, image.height);
+      developer.log(
+        '[ImagePreprocessor] Cropping image to face box: '
+        'left=${safe.left}, top=${safe.top}, w=${safe.width}, h=${safe.height}',
+        name: 'ImagePreprocessor',
+      );
+      image = img.copyCrop(image, x: safe.left, y: safe.top, width: safe.width, height: safe.height);
+      developer.log(
+        '[ImagePreprocessor] Cropped image size: ${image.width}x${image.height}',
+        name: 'ImagePreprocessor',
+      );
+    }
 
     developer.log('[ImagePreprocessor] Resizing image to 224x224...', name: 'ImagePreprocessor');
     image = img.copyResize(image, width: 224, height: 224);
@@ -63,4 +81,12 @@ Float32List preprocessImage(File file) {
     );
     rethrow;
   }
+}
+
+math.Rectangle<int> _clampRect(math.Rectangle<int> rect, int imageW, int imageH) {
+  int left = rect.left.clamp(0, imageW - 1);
+  int top = rect.top.clamp(0, imageH - 1);
+  int right = (rect.left + rect.width).clamp(left + 1, imageW);
+  int bottom = (rect.top + rect.height).clamp(top + 1, imageH);
+  return math.Rectangle<int>(left, top, right - left, bottom - top);
 }
