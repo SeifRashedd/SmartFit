@@ -45,5 +45,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Smart Fit needs access to your camera to capture images for gender prediction.</string>
 </dict>
 </plist>
