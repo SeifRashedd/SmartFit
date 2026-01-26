@@ -187,15 +187,13 @@ class GenderService {
   }
 
   Future<math.Rectangle<int>?> _detectLargestFaceCrop(File imageFile) async {
-    if (_faceDetector == null) {
-      _faceDetector = FaceDetector(
-        options: FaceDetectorOptions(
-          performanceMode: FaceDetectorMode.fast,
-          enableLandmarks: false,
-          enableClassification: false,
-        ),
-      );
-    }
+    _faceDetector ??= FaceDetector(
+      options: FaceDetectorOptions(
+        performanceMode: FaceDetectorMode.fast,
+        enableLandmarks: false,
+        enableClassification: false,
+      ),
+    );
 
     developer.log(
       '[GenderService] Detecting face (ML Kit)...',

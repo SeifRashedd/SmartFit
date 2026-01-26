@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
-import 'package:smartfit/service/gender_service.dart';
+import 'package:smartfit/features/face_dect/service/gender_service.dart';
 
 class GenderViewModel extends ChangeNotifier {
   final GenderService _service = GenderService();

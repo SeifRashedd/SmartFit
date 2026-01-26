@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:smartfit/view_models/gender_view_model.dart';
+import 'package:smartfit/features/face_dect/model/gender_view_model.dart';
 
 class GenderView extends StatefulWidget {
   const GenderView({super.key});
@@ -21,7 +21,10 @@ class _GenderViewState extends State<GenderView> {
   void initState() {
     super.initState();
     developer.log('[GenderView] Widget initialized', name: 'GenderView');
-    developer.log('[GenderView] Initializing view model...', name: 'GenderView');
+    developer.log(
+      '[GenderView] Initializing view model...',
+      name: 'GenderView',
+    );
     _viewModel.addListener(_onViewModelChanged);
     _viewModel.init();
   }
@@ -34,7 +37,10 @@ class _GenderViewState extends State<GenderView> {
   }
 
   void _onViewModelChanged() {
-    developer.log('[GenderView] View model changed, rebuilding UI...', name: 'GenderView');
+    developer.log(
+      '[GenderView] View model changed, rebuilding UI...',
+      name: 'GenderView',
+    );
     if (mounted) {
       setState(() {});
     }
@@ -42,10 +48,16 @@ class _GenderViewState extends State<GenderView> {
 
   Future<void> _pickImage() async {
     try {
-      developer.log('[GenderView] Image picker button pressed', name: 'GenderView');
+      developer.log(
+        '[GenderView] Image picker button pressed',
+        name: 'GenderView',
+      );
 
       if (!_viewModel.isInitialized) {
-        developer.log('[GenderView] WARNING: Model not initialized, showing error', name: 'GenderView');
+        developer.log(
+          '[GenderView] WARNING: Model not initialized, showing error',
+          name: 'GenderView',
+        );
         _showError('Model is still loading. Please wait...');
         return;
       }
@@ -55,27 +67,45 @@ class _GenderViewState extends State<GenderView> {
       });
       developer.log('[GenderView] Opening camera...', name: 'GenderView');
 
-      final picked = await _picker.pickImage(source: ImageSource.camera, imageQuality: 85);
+      final picked = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+      );
 
       if (picked == null) {
-        developer.log('[GenderView] User cancelled image selection', name: 'GenderView');
+        developer.log(
+          '[GenderView] User cancelled image selection',
+          name: 'GenderView',
+        );
         setState(() {
           _isLoading = false;
         });
         return;
       }
 
-      developer.log('[GenderView] Image selected: ${picked.path}', name: 'GenderView');
-      developer.log('[GenderView] Image size: ${await File(picked.path).length()} bytes', name: 'GenderView');
+      developer.log(
+        '[GenderView] Image selected: ${picked.path}',
+        name: 'GenderView',
+      );
+      developer.log(
+        '[GenderView] Image size: ${await File(picked.path).length()} bytes',
+        name: 'GenderView',
+      );
 
       setState(() {
         _image = File(picked.path);
         _isLoading = true;
       });
-      developer.log('[GenderView] Image file set, starting gender detection...', name: 'GenderView');
+      developer.log(
+        '[GenderView] Image file set, starting gender detection...',
+        name: 'GenderView',
+      );
 
       await _viewModel.detectGender(_image!);
-      developer.log('[GenderView] Gender detection completed', name: 'GenderView');
+      developer.log(
+        '[GenderView] Gender detection completed',
+        name: 'GenderView',
+      );
     } catch (e, stackTrace) {
       developer.log(
         '[GenderView] ERROR during image picking: $e',
@@ -95,15 +125,26 @@ class _GenderViewState extends State<GenderView> {
 
   void _showError(String message) {
     developer.log('[GenderView] Showing error: $message', name: 'GenderView');
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), backgroundColor: Colors.red));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     developer.log('[GenderView] Building widget...', name: 'GenderView');
-    developer.log('[GenderView] Image: ${_image?.path ?? "null"}', name: 'GenderView');
-    developer.log('[GenderView] Model initialized: ${_viewModel.isInitialized}', name: 'GenderView');
-    developer.log('[GenderView] Gender: ${_viewModel.gender ?? "null"}', name: 'GenderView');
+    developer.log(
+      '[GenderView] Image: ${_image?.path ?? "null"}',
+      name: 'GenderView',
+    );
+    developer.log(
+      '[GenderView] Model initialized: ${_viewModel.isInitialized}',
+      name: 'GenderView',
+    );
+    developer.log(
+      '[GenderView] Gender: ${_viewModel.gender ?? "null"}',
+      name: 'GenderView',
+    );
     developer.log('[GenderView] Loading: $_isLoading', name: 'GenderView');
 
     return Scaffold(
@@ -116,7 +157,11 @@ class _GenderViewState extends State<GenderView> {
               const Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Column(
-                  children: [CircularProgressIndicator(), SizedBox(height: 16), Text('Loading ML model...')],
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Loading ML model...'),
+                  ],
                 ),
               ),
 
@@ -125,11 +170,18 @@ class _GenderViewState extends State<GenderView> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 48,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       'Failed to load model',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -140,7 +192,10 @@ class _GenderViewState extends State<GenderView> {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
-                        developer.log('[GenderView] Retrying model initialization...', name: 'GenderView');
+                        developer.log(
+                          '[GenderView] Retrying model initialization...',
+                          name: 'GenderView',
+                        );
                         _viewModel.init();
                       },
                       child: const Text('Retry'),
@@ -153,7 +208,11 @@ class _GenderViewState extends State<GenderView> {
               _image != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.file(_image!, height: 250, fit: BoxFit.cover),
+                      child: Image.file(
+                        _image!,
+                        height: 250,
+                        fit: BoxFit.cover,
+                      ),
                     )
                   : const Icon(Icons.person, size: 200),
 
@@ -162,7 +221,11 @@ class _GenderViewState extends State<GenderView> {
               ElevatedButton(
                 onPressed: _isLoading ? null : _pickImage,
                 child: _isLoading
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Text('Capture Image'),
               ),
 
@@ -179,14 +242,20 @@ class _GenderViewState extends State<GenderView> {
                 ),
 
               if (_isLoading && _image != null)
-                const Padding(padding: EdgeInsets.all(8.0), child: Text('Processing image...')),
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text('Processing image...'),
+                ),
 
               if (_viewModel.gender != null && !_isLoading)
                 Column(
                   children: [
                     Text(
                       'Gender: ${_viewModel.gender!.toUpperCase()}',
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
