@@ -47,20 +47,25 @@ class BodyDetectModel extends ChangeNotifier {
         return;
       }
 
-      final ls = k[5]; // left shoulder
-      final rs = k[6]; // right shoulder
-      final lh = k[11]; // left hip
-      final rh = k[12]; // right hip
-      final la = k[15]; // left ankle
-      final ra = k[16]; // right ankle
+      // MoveNet: coordinates are normalized 0.0–1.0; normalize if model used 0–192
+      final kNorm = _normalizeKeypoints(k);
 
-      // Log keypoint scores for debugging
-      developer.log(
-        'Keypoint scores - LS: ${ls['score']}, RS: ${rs['score']}, '
-        'LH: ${lh['score']}, RH: ${rh['score']}, '
-        'LA: ${la['score']}, RA: ${ra['score']}',
-        name: 'BodyDetectModel',
-      );
+      // MoveNet keypoint order: 0 nose, 1 L eye, 2 R eye, 3 L ear, 4 R ear,
+      // 5 L shoulder, 6 R shoulder, 7 L elbow, 8 R elbow, 9 L wrist, 10 R wrist,
+      // 11 L hip, 12 R hip, 13 L knee, 14 R knee, 15 L ankle, 16 R ankle
+      final nose = kNorm[0];
+      final ls = kNorm[5];
+      final rs = kNorm[6];
+      final le = kNorm[7];
+      final re = kNorm[8];
+      final lw = kNorm[9];
+      final rw = kNorm[10];
+      final lh = kNorm[11];
+      final rh = kNorm[12];
+      final lk = kNorm[13];
+      final rk = kNorm[14];
+      final la = kNorm[15];
+      final ra = kNorm[16];
 
       if (!_valid(ls, rs, lh, rh, la, ra)) {
         error = 'Please stand fully inside the frame';
@@ -69,14 +74,40 @@ class BodyDetectModel extends ChangeNotifier {
         return;
       }
 
-      // Calculate widths, using fallback if one side has low confidence
-      shoulderWidth = _calculateWidth(ls, rs);
-      hipWidth = _calculateWidth(lh, rh);
+      // Full body height: nose to mid-ankle (all nodes scale)
+      final avgAnkle = _avg(la, ra);
+      final fullBodyHeight = _dist(nose, avgAnkle);
+      if (fullBodyHeight == 0) {
+        error = 'Unable to calculate body measurements. Please try again.';
+        loading = false;
+        notifyListeners();
+        return;
+      }
+
+      // Upper body width from ALL upper nodes (shoulders, elbows, wrists)
+      shoulderWidth = _dist(ls, rs);
+      final elbowSpan = _dist(le, re);
+      final wristSpan = _dist(lw, rw);
+      double upperWidth = _combinedWidth(
+        shoulderWidth!,
+        elbowSpan,
+        wristSpan,
+        ls['score']!, rs['score']!, le['score']!, re['score']!, lw['score']!, rw['score']!,
+      );
+
+      // Lower body width from ALL lower nodes (hips, knees, ankles)
+      hipWidth = _dist(lh, rh);
+      final kneeSpan = _dist(lk, rk);
+      final ankleSpan = _dist(la, ra);
+      double lowerWidth = _combinedWidth(
+        hipWidth!,
+        kneeSpan,
+        ankleSpan,
+        lh['score']!, rh['score']!, lk['score']!, rk['score']!, la['score']!, ra['score']!,
+      );
 
       final avgShoulder = _avg(ls, rs);
       final avgHip = _avg(lh, rh);
-      final avgAnkle = _avg(la, ra);
-
       torsoHeight = _dist(avgShoulder, avgHip);
       legLength = _dist(avgHip, avgAnkle);
 
@@ -87,8 +118,9 @@ class BodyDetectModel extends ChangeNotifier {
         return;
       }
 
-      upperRatio = shoulderWidth! / torsoHeight!;
-      lowerRatio = hipWidth! / legLength!;
+      // Ratios: width / full body height (MoveNet 0–1 normalized)
+      upperRatio = upperWidth / fullBodyHeight;
+      lowerRatio = lowerWidth / fullBodyHeight;
 
       // Log all measurements for debugging
       developer.log(
@@ -141,6 +173,22 @@ class BodyDetectModel extends ChangeNotifier {
     return validCount >= 4 && shoulderValid && hipValid;
   }
 
+  /// MoveNet docs: coords normalized 0–1. If model outputs 0–192, normalize.
+  List<Map<String, double>> _normalizeKeypoints(List<Map<String, double>> k) {
+    double maxVal = 0;
+    for (final p in k) {
+      if (p['x']! > maxVal) maxVal = p['x']!;
+      if (p['y']! > maxVal) maxVal = p['y']!;
+    }
+    if (maxVal <= 1.0) return k;
+    final scale = 1.0 / maxVal;
+    return k.map((p) => {
+      'x': p['x']! * scale,
+      'y': p['y']! * scale,
+      'score': p['score']!,
+    }).toList();
+  }
+
   Map<String, double> _avg(Map a, Map b) => {
     'x': (a['x']! + b['x']!) / 2,
     'y': (a['y']! + b['y']!) / 2,
@@ -150,47 +198,43 @@ class BodyDetectModel extends ChangeNotifier {
     return sqrt(pow(a['x']! - b['x']!, 2) + pow(a['y']! - b['y']!, 2));
   }
 
-  /// Calculate width between two points, with fallback if one has low confidence
-  double _calculateWidth(Map a, Map b) {
-    final scoreA = a['score']!;
-    final scoreB = b['score']!;
-
-    // If both have good confidence, use distance
-    if (scoreA > 0.3 && scoreB > 0.3) {
-      return _dist(a, b);
+  /// Combine primary + optional spans (all nodes); include only when score good.
+  double _combinedWidth(
+    double primary,
+    double span2,
+    double span3,
+    double s1a, double s1b, double s2a, double s2b, double s3a, double s3b,
+  ) {
+    double sum = primary;
+    int n = 1;
+    if (s2a > 0.25 && s2b > 0.25) {
+      sum += span2;
+      n++;
     }
-
-    // If only one has good confidence, still use distance but log a warning
-    // The distance calculation will still work, just may be less accurate
-    if (scoreA > 0.3 || scoreB > 0.3) {
-      developer.log(
-        'Warning: One keypoint has low confidence (A: $scoreA, B: $scoreB)',
-        name: 'BodyDetectModel',
-      );
-      return _dist(a, b);
+    if (s3a > 0.25 && s3b > 0.25) {
+      sum += span3;
+      n++;
     }
-
-    // If both are low confidence, still return distance (validation should catch this)
-    return _dist(a, b);
+    return sum / n;
   }
 
-  // 🧥 TOP (Shirts / Jackets)
+  // 🧥 TOP — calibrated for MoveNet 0–1 ratios (was under-predicting: M/S → aim L/XL)
   String _mapTopSize(double r) {
-    if (r < 0.38) return 'S';
-    if (r < 0.42) return 'M';
-    if (r < 0.46) return 'L';
-    if (r < 0.50) return 'XL';
-    if (r < 0.54) return 'XXL';
+    if (r < 0.28) return 'S';
+    if (r < 0.32) return 'M';
+    if (r < 0.36) return 'L';
+    if (r < 0.42) return 'XL';
+    if (r < 0.48) return 'XXL';
     return 'XXXL';
   }
 
-  // 👖 BOTTOM (Jeans / Pants)
+  // 👖 BOTTOM — same calibration
   String _mapBottomSize(double r) {
-    if (r < 0.34) return 'S';
-    if (r < 0.38) return 'M';
-    if (r < 0.42) return 'L';
-    if (r < 0.46) return 'XL';
-    if (r < 0.50) return 'XXL';
+    if (r < 0.24) return 'S';
+    if (r < 0.28) return 'M';
+    if (r < 0.32) return 'L';
+    if (r < 0.38) return 'XL';
+    if (r < 0.44) return 'XXL';
     return 'XXXL';
   }
 }

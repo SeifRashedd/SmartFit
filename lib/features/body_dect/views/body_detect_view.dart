@@ -1,9 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:smartfit/core/services/camera_service.dart';
 import 'package:smartfit/features/body_dect/model/body_detect_model.dart';
+import 'package:smartfit/features/body_dect/views/body_detect_guided_camera_view.dart';
 
 class BodyDetectView extends StatefulWidget {
   const BodyDetectView({super.key});
@@ -14,7 +13,6 @@ class BodyDetectView extends StatefulWidget {
 
 class _BodyDetectViewState extends State<BodyDetectView> {
   final vm = BodyDetectModel();
-  final CameraService _cameraService = CameraService();
   File? image;
 
   @override
@@ -23,46 +21,16 @@ class _BodyDetectViewState extends State<BodyDetectView> {
     vm.init();
   }
 
-  Future<void> _showImageSourceDialog() async {
-    final source = await showDialog<ImageSource>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Image Source'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Camera'),
-              onTap: () => Navigator.pop(context, ImageSource.camera),
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Gallery'),
-              onTap: () => Navigator.pop(context, ImageSource.gallery),
-            ),
-          ],
-        ),
+  Future<void> _openGuidedCamera() async {
+    final file = await Navigator.of(context).push<File>(
+      MaterialPageRoute(
+        builder: (context) => const BodyDetectGuidedCameraView(),
       ),
     );
-
-    if (source == null) return;
-
-    File? pickedImage;
-    if (source == ImageSource.camera) {
-      pickedImage = await _cameraService.captureImage();
-    } else {
-      pickedImage = await _cameraService.pickFromGallery();
-    }
-
-    if (pickedImage == null) return;
-
-    setState(() {
-      image = pickedImage;
-    });
-
+    if (file == null || !mounted) return;
+    setState(() => image = file);
     await vm.analyzeBody(image!);
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   @override
@@ -79,13 +47,18 @@ class _BodyDetectViewState extends State<BodyDetectView> {
 
             const SizedBox(height: 20),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            Column(
               children: [
+                const Text(
+                  'Stand so your full body fits inside the frame for accurate sizing.',
+                  style: TextStyle(color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
                 ElevatedButton.icon(
-                  onPressed: _showImageSourceDialog,
-                  icon: const Icon(Icons.add_a_photo),
-                  label: const Text('Select Image'),
+                  onPressed: _openGuidedCamera,
+                  icon: const Icon(Icons.camera_alt),
+                  label: const Text('Take photo for body size'),
                 ),
               ],
             ),
