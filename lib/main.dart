@@ -1,6 +1,7 @@
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:smartfit/features/body_dect/views/body_detect_view.dart';
 import 'features/face_dect/views/gender_view.dart';
 
 void main() {
@@ -31,7 +32,8 @@ class SmartFitApp extends StatelessWidget {
     return MaterialApp(
       title: 'Smart Fit',
       debugShowCheckedModeBanner: false,
-      home: const GenderView(),
+      // home: const GenderView(),
+      home: BodyDetectView(),
     );
   }
 }
