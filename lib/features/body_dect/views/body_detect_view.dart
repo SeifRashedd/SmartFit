@@ -102,27 +102,45 @@ class _BodyDetectViewState extends State<BodyDetectView> {
                     const Divider(),
                     const SizedBox(height: 8),
                     const Text(
-                      'Debug Info:',
+                      '📊 Debug / Calibration Info:',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
+                    // Ratio percentages — most important for calibration
                     if (vm.upperRatio != null)
                       Text(
-                        'Upper Ratio: ${vm.upperRatio!.toStringAsFixed(4)}',
-                        style: const TextStyle(fontSize: 14),
+                        'Shoulder/Height ratio: '
+                        '${(vm.upperRatio! * 100).toStringAsFixed(1)}%'
+                        '  (${vm.upperRatio!.toStringAsFixed(4)})',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: vm.upperRatio! < 0.10 || vm.upperRatio! > 0.50
+                              ? Colors.orange
+                              : Colors.green[700],
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     if (vm.lowerRatio != null)
                       Text(
-                        'Lower Ratio: ${vm.lowerRatio!.toStringAsFixed(4)}',
-                        style: const TextStyle(fontSize: 14),
+                        'Hip/Height ratio: '
+                        '${(vm.lowerRatio! * 100).toStringAsFixed(1)}%'
+                        '  (${vm.lowerRatio!.toStringAsFixed(4)})',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: vm.lowerRatio! < 0.08 || vm.lowerRatio! > 0.45
+                              ? Colors.orange
+                              : Colors.green[700],
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
+                    // Raw values
                     if (vm.shoulderWidth != null)
                       Text(
-                        'Shoulder Width: ${vm.shoulderWidth!.toStringAsFixed(2)}',
+                        'Shoulder span: ${vm.shoulderWidth!.toStringAsFixed(3)}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -130,7 +148,7 @@ class _BodyDetectViewState extends State<BodyDetectView> {
                       ),
                     if (vm.hipWidth != null)
                       Text(
-                        'Hip Width: ${vm.hipWidth!.toStringAsFixed(2)}',
+                        'Hip span: ${vm.hipWidth!.toStringAsFixed(3)}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -138,7 +156,7 @@ class _BodyDetectViewState extends State<BodyDetectView> {
                       ),
                     if (vm.torsoHeight != null)
                       Text(
-                        'Torso Height: ${vm.torsoHeight!.toStringAsFixed(2)}',
+                        'Torso height: ${vm.torsoHeight!.toStringAsFixed(3)}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -146,12 +164,18 @@ class _BodyDetectViewState extends State<BodyDetectView> {
                       ),
                     if (vm.legLength != null)
                       Text(
-                        'Leg Length: ${vm.legLength!.toStringAsFixed(2)}',
+                        'Leg length: ${vm.legLength!.toStringAsFixed(3)}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
                         ),
                       ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      '💡 If sizes are wrong, check the ratio% values above\n'
+                      'and adjust _mapTopSize/_mapBottomSize thresholds.',
+                      style: TextStyle(fontSize: 11, color: Colors.blueGrey),
+                    ),
                   ],
                 ),
               ),

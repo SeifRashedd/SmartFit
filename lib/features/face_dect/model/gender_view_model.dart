@@ -96,7 +96,7 @@ class GenderViewModel extends ChangeNotifier {
       confidence = result['confidence'] as double?;
 
       developer.log(
-        '[GenderViewModel] Gender: $gender, Confidence: ${confidence != null ? (confidence! * 100).toStringAsFixed(2) + "%" : "null"}',
+        '[GenderViewModel] Gender: $gender, Confidence: ${confidence != null ? "${(confidence! * 100).toStringAsFixed(2)}%" : "null"}',
         name: 'GenderViewModel',
       );
       developer.log(
