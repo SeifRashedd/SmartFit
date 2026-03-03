@@ -7,27 +7,34 @@ class AppSettingCubit extends Cubit<AppSettingsState> {
 
   final List<Map<String, dynamic>> onBoardingScreens = [
     {
-      'img': 'assets/images/onBording1.png',
-      'title': 'Find the Right Gym for You',
+      'img': 'assets/images/onbording1.png',
+      'title': 'Perfect Fit, Every Time.',
       'description':
-          'Browse a wide range of gyms, studios, and fitness spaces in your area —all in one app.',
+          'Our AI analyzes your unique measurements to recommend the size that actually fits you.',
     },
     {
-      'img': 'assets/images/onBording2.png',
-      'title': 'View & Book Services Instantly',
+      'img': 'assets/images/onbording2.png',
+      'title': 'AI-Powered Recommendations',
       'description':
-          'From group classes to personal training, discover what each gym offers.',
+          'Our intelligent algorithms learn your style and body type to suggest clothes you\'ll love.',
     },
     {
-      'img': 'assets/images/onBording3.png',
-      'title': 'All Your Bookings in One Place',
+      'img': 'assets/images/onbording3.png',
+      'title': 'Ready for Your Perfect Fit?',
       'description':
-          'Track upcoming sessions, manage your schedule, and never miss a workout.',
+          'Join thousands of shoppers who found their perfect size with SmartFit AI.',
     },
   ];
 
   int _selectedOnBoardingScreen = 0;
   int get selectedOnBoardingScreen => _selectedOnBoardingScreen;
+
+  void setOnboardingScreen(int index) {
+    if (index < 0 || index >= onBoardingScreens.length) return;
+    if (_selectedOnBoardingScreen == index) return;
+    _selectedOnBoardingScreen = index;
+    emit(OnBoardingState());
+  }
 
   void changeOnboardingScreen() {
     if (_selectedOnBoardingScreen < 2) {

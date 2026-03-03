@@ -1,7 +1,9 @@
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:smartfit/features/body_dect/views/body_detect_view.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smartfit/features/app_settings/logic/app_settings_cubit.dart';
+import 'package:smartfit/features/app_settings/views/splash_screen.dart';
 
 void main() {
   developer.log('[Main] Starting Smart Fit application...', name: 'Main');
@@ -25,11 +27,20 @@ class SmartFitApp extends StatelessWidget {
   Widget build(BuildContext context) {
     developer.log('[SmartFitApp] Building app widget...', name: 'SmartFitApp');
 
-    return MaterialApp(
-      title: 'Smart Fit',
-      debugShowCheckedModeBanner: false,
-      // home: const GenderView(),
-      home: BodyDetectView(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => AppSettingCubit()),
+      ],
+      child: MaterialApp(
+        
+        theme: ThemeData(
+          scaffoldBackgroundColor: Color(0xFFF5F7FA)
+        ),
+        title: 'Smart Fit',
+        debugShowCheckedModeBanner: false,
+        // home: const GenderView(),
+        home: const SplashScreen(),
+      ),
     );
   }
 }

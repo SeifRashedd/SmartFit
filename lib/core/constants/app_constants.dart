@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// App-wide constants.
 class AppConstants {
   static const String appName = 'Smart Fit';
@@ -31,4 +33,8 @@ class AppConstants {
   /// Minimum left→right horizontal keypoint span (normalized 0–1).
   /// ≈ 0.12 means shoulders are clearly separated in the frame.
   static const double personFillMinSpanX = 0.12;
+
+
+
+  static const EdgeInsets appPadding = EdgeInsets.symmetric(horizontal: 20);
 }
