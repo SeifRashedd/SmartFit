@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:smartfit/core/constants/app_constants.dart';
 import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/core/styles/app_fonts.dart';
+import 'package:smartfit/core/widgets/custom_button.dart';
+import 'package:smartfit/features/face_dect/widget/info_widget.dart';
 
 class DetectFaceView extends StatelessWidget {
   const DetectFaceView({super.key});
@@ -17,7 +19,10 @@ class DetectFaceView extends StatelessWidget {
             children: [
               Text('Smart Fit', style: AppFonts.montserrat18BoldBlack),
               SizedBox(height: 20),
-              Text("Let's map your face", style: AppFonts.montserrat30BoldBlack),
+              Text(
+                "Let's map your face",
+                style: AppFonts.montserrat30BoldBlack,
+              ),
               SizedBox(height: 15),
               Text(
                 'Our AI analyzes your facial features for personalized accessory and grooming recommendations.',
@@ -26,23 +31,71 @@ class DetectFaceView extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(color: const Color(0xFFE6F7FF), borderRadius: BorderRadius.circular(999)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE6F7FF),
+                  borderRadius: BorderRadius.circular(999),
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.lock_outline, size: 16, color: AppColors.primary),
+                    const Icon(
+                      Icons.lock_outline,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
                     const SizedBox(width: 8),
-                    Text('100% Private & Processed Locally', style: AppFonts.montserrat13BoldPrimary),
+                    Text(
+                      '100% Private & Processed Locally',
+                      style: AppFonts.montserrat13BoldPrimary,
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 15),
               Container(
-                decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(12))),
-                margin: EdgeInsets.all(12),
-                child: Image.asset('assets/images/detect_face_image.png', fit: BoxFit.fill),
+                height: 350,
+                margin: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    'assets/images/detect_face_image.png',
+                    fit: BoxFit.fill,
+                  ),
+                ),
               ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: InfoCard(
+                      assetPath: 'assets/images/sun.png',
+                      title: 'Good\nlighting',
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: InfoCard(
+                      assetPath: 'assets/images/sunglasses.png',
+                      title: 'Remove\nglasses',
+                    ),
+                  ),
+                ],
+              ),
+              Spacer(),
+              CustomButton(
+                onPressed: () {},
+                text: 'Start Face Scan',
+                showIcon: true,
+                icon: const Icon(Icons.face_unlock_outlined, size: 18),
+              ),
+              const SizedBox(height: 20),
             ],
           ),
         ),

@@ -3,11 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smartfit/core/constants/app_constants.dart';
 import 'package:smartfit/core/styles/app_colors.dart';
-import 'package:smartfit/core/styles/app_fonts.dart';
 import 'package:smartfit/features/app_settings/logic/app_settings_cubit.dart';
 import 'package:smartfit/features/app_settings/views/widgets/onboarding_page.dart';
 import 'package:smartfit/features/app_settings/views/widgets/onboarding_top_bar.dart';
 import 'package:smartfit/features/body_dect/views/body_detect_view.dart';
+import 'package:smartfit/core/widgets/custom_button.dart';
 
 class OnBoardingView extends StatefulWidget {
   const OnBoardingView({super.key});
@@ -33,12 +33,15 @@ class _OnBoardingViewState extends State<OnBoardingView> {
   }
 
   void _skip() {
-    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => BodyDetectView()));
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (_) => BodyDetectView()));
   }
 
   void _primaryCtaPressed() {
     final cubit = context.read<AppSettingCubit>();
-    final isLast = cubit.selectedOnBoardingScreen >= cubit.onBoardingScreens.length - 1;
+    final isLast =
+        cubit.selectedOnBoardingScreen >= cubit.onBoardingScreens.length - 1;
     if (isLast) {
       _skip();
       return;
@@ -56,7 +59,8 @@ class _OnBoardingViewState extends State<OnBoardingView> {
     final primary = AppColors.primary;
 
     return BlocBuilder<AppSettingCubit, AppSettingsState>(
-      buildWhen: (_, next) => next is OnBoardingState || next is AppSettingInitial,
+      buildWhen: (_, next) =>
+          next is OnBoardingState || next is AppSettingInitial,
       builder: (context, _) {
         final cubit = context.read<AppSettingCubit>();
         final pages = cubit.onBoardingScreens;
@@ -83,7 +87,9 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                     child: PageView.builder(
                       controller: _controller,
                       itemCount: pages.length,
-                      onPageChanged: (i) => context.read<AppSettingCubit>().setOnboardingScreen(i),
+                      onPageChanged: (i) => context
+                          .read<AppSettingCubit>()
+                          .setOnboardingScreen(i),
                       itemBuilder: (context, i) {
                         final data = pages[i];
                         return OnBoardingPage(
@@ -98,36 +104,21 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                     ),
                   ),
                   const SizedBox(height: 18),
-                  SizedBox(
-                    height: 52,
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _primaryCtaPressed,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(primaryLabel, style: AppFonts.montserrat16MediumWhite),
-                          if (!isLast) ...[
-                            const SizedBox(width: 10),
-                            if (index == 0)
-                              SvgPicture.asset(
-                                'assets/images/checkroom.svg',
-                                width: 15,
-                                height: 15,
-                                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                              )
-                            else
-                              const Icon(Icons.arrow_forward_rounded, size: 18),
-                          ],
-                        ],
-                      ),
-                    ),
+                  CustomButton(
+                    onPressed: _primaryCtaPressed,
+                    text: primaryLabel,
+                    showIcon: !isLast,
+                    icon: index == 0
+                        ? SvgPicture.asset(
+                            'assets/images/checkroom.svg',
+                            width: 15,
+                            height: 15,
+                            colorFilter: const ColorFilter.mode(
+                              Colors.white,
+                              BlendMode.srcIn,
+                            ),
+                          )
+                        : const Icon(Icons.arrow_forward_rounded, size: 18),
                   ),
                   const SizedBox(height: 20),
                 ],
