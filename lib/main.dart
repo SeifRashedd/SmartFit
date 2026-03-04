@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smartfit/features/app_settings/logic/app_settings_cubit.dart';
 import 'package:smartfit/features/app_settings/views/splash_screen.dart';
+import 'package:smartfit/features/face_dect/views/detect_face_view.dart';
 
 void main() {
   developer.log('[Main] Starting Smart Fit application...', name: 'Main');
@@ -39,7 +40,7 @@ class SmartFitApp extends StatelessWidget {
         title: 'Smart Fit',
         debugShowCheckedModeBanner: false,
         // home: const GenderView(),
-        home: const SplashScreen(),
+        home: const DetectFaceView(),
       ),
     );
   }

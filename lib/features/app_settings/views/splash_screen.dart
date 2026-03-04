@@ -21,10 +21,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (!mounted) return;
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const OnBoardingView()),
-    );
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const OnBoardingView()));
   }
 
   @override
@@ -53,7 +50,7 @@ class _SplashContent extends StatelessWidget {
             boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.20), blurRadius: 22)],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(22 - 8),
             child: Image.asset('assets/images/Smart_fit_logo.png', fit: BoxFit.fill),
           ),
         ),
