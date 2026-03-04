@@ -3,10 +3,10 @@ import 'package:smartfit/core/constants/app_constants.dart';
 import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/core/styles/app_fonts.dart';
 import 'package:smartfit/core/widgets/custom_button.dart';
-import 'package:smartfit/features/face_dect/widget/info_widget.dart';
+import 'package:smartfit/features/body_dect/widget/info_card_body_detect.dart';
 
-class DetectFaceView extends StatelessWidget {
-  const DetectFaceView({super.key});
+class DetectBodyView extends StatelessWidget {
+  const DetectBodyView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,12 +20,12 @@ class DetectFaceView extends StatelessWidget {
               Text('Smart Fit', style: AppFonts.montserrat18BoldBlack),
               SizedBox(height: 20),
               Text(
-                "Let's map your face",
+                "Let's map your body",
                 style: AppFonts.montserrat30BoldBlack,
               ),
               SizedBox(height: 15),
               Text(
-                'Our AI analyzes your facial features for personalized accessory and grooming recommendations.',
+                'Our AI analyzes your shape in seconds for personalized recommendations.',
                 style: AppFonts.montserrat14Regular64748B,
                 textAlign: TextAlign.center,
               ),
@@ -65,35 +65,35 @@ class DetectFaceView extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.asset(
-                    'assets/images/detect_face_image.png',
+                    'assets/images/detect_body_image.png',
                     fit: BoxFit.fill,
                   ),
                 ),
               ),
               const SizedBox(height: 20),
               Row(
-                children: [
-                  Expanded(
-                    child: InfoCardFaceDetect(
-                      assetPath: 'assets/images/sun.png',
-                      title: 'Good\nlighting',
-                    ),
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: const [
+                  InfoCardBodyDetect(
+                    assetPath: 'assets/images/hanger.png',
+                    title: 'Tight-fitting\nclothing',
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: InfoCardFaceDetect(
-                      assetPath: 'assets/images/sunglasses.png',
-                      title: 'Remove\nglasses',
-                    ),
+                  InfoCardBodyDetect(
+                    assetPath: 'assets/images/sun.png',
+                    title: 'Good\nlighting',
+                  ),
+                  InfoCardBodyDetect(
+                    assetPath: 'assets/images/person_stand.png',
+                    title: 'Stand\nfull body',
                   ),
                 ],
               ),
               Spacer(),
               CustomButton(
                 onPressed: () {},
-                text: 'Start Face Scan',
+                text: 'Start Body Scan',
                 showIcon: true,
-                icon: const Icon(Icons.face_unlock_outlined, size: 18),
+                icon: const Icon(Icons.man_rounded, size: 18),
               ),
               const SizedBox(height: 20),
             ],

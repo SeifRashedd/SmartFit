@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/core/styles/app_fonts.dart';
 
-class InfoCard extends StatelessWidget {
+class InfoCardFaceDetect extends StatelessWidget {
   final String assetPath;
   final String title;
 
-  const InfoCard({super.key, required this.assetPath, required this.title});
+  const InfoCardFaceDetect({
+    super.key,
+    required this.assetPath,
+    required this.title,
+  });
 
   @override
   Widget build(BuildContext context) {
