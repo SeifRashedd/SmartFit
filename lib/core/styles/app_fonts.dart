@@ -12,7 +12,7 @@ class AppFonts {
       TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w800, fontFamily: montserrat);
 
   static TextStyle get montserrat30BoldBlack =>
-      TextStyle(color: Colors.black, fontSize: 30, fontWeight: FontWeight.w700, fontFamily: montserrat);
+      TextStyle(color: Colors.black, fontSize: 25, fontWeight: FontWeight.w700, fontFamily: montserrat);
 
   static TextStyle get montserrat13RegularBlack =>
       TextStyle(color: Colors.black, fontSize: 13, fontWeight: FontWeight.w400, fontFamily: montserrat);

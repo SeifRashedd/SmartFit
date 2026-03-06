@@ -9,3 +9,13 @@ final class UserGenderUpdated extends UserState {
 
   final String gender;
 }
+
+final class UserBodyUpdated extends UserState {
+  UserBodyUpdated({
+    required this.topSize,
+    required this.bottomSize,
+  });
+
+  final String topSize;
+  final String bottomSize;
+}
