@@ -8,6 +8,7 @@ import 'package:smartfit/features/app_settings/views/widgets/onboarding_page.dar
 import 'package:smartfit/features/app_settings/views/widgets/onboarding_top_bar.dart';
 import 'package:smartfit/features/body_dect/views/body_detect_view.dart';
 import 'package:smartfit/core/widgets/custom_button.dart';
+import 'package:smartfit/features/face_dect/views/detect_face_view.dart';
 
 class OnBoardingView extends StatefulWidget {
   const OnBoardingView({super.key});
@@ -35,7 +36,7 @@ class _OnBoardingViewState extends State<OnBoardingView> {
   void _skip() {
     Navigator.of(
       context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => BodyDetectView()));
+    ).pushReplacement(MaterialPageRoute(builder: (_) => DetectFaceView()));
   }
 
   void _primaryCtaPressed() {

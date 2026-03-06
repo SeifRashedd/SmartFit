@@ -32,7 +32,7 @@ class OnBoardingPage extends StatelessWidget {
           child: Center(
             child: Container(
               width: double.infinity,
-              constraints: const BoxConstraints(maxWidth: 360),
+              constraints: const BoxConstraints(maxWidth: 300),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(22),
@@ -51,9 +51,7 @@ class OnBoardingPage extends StatelessWidget {
                   child: Image.asset(
                     imagePath,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Center(
-                      child: Icon(Icons.image_not_supported_outlined),
-                    ),
+                    errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.image_not_supported_outlined)),
                   ),
                 ),
               ),
@@ -69,34 +67,20 @@ class OnBoardingPage extends StatelessWidget {
         const SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: OnBoardingHighlightedTitle(
-            title: title,
-            primary: primary,
-            textColor: textDark,
-          ),
+          child: OnBoardingHighlightedTitle(title: title, primary: primary, textColor: textDark),
         ),
         const SizedBox(height: 10),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Text(
-            description,
-            textAlign: TextAlign.center,
-            style: AppFonts.montserrat13RegularBlack,
-          ),
+          child: Text(description, textAlign: TextAlign.center, style: AppFonts.montserrat13RegularBlack),
         ),
-        const SizedBox(height: 10),
       ],
     );
   }
 }
 
 class OnBoardingHighlightedTitle extends StatelessWidget {
-  const OnBoardingHighlightedTitle({
-    super.key,
-    required this.title,
-    required this.primary,
-    required this.textColor,
-  });
+  const OnBoardingHighlightedTitle({super.key, required this.title, required this.primary, required this.textColor});
 
   final String title;
   final Color primary;
@@ -109,11 +93,7 @@ class OnBoardingHighlightedTitle extends StatelessWidget {
       return Text(
         title,
         textAlign: TextAlign.center,
-        style: AppFonts.montserrat24MediumWhite.copyWith(
-          color: textColor,
-          fontSize: 24,
-          fontWeight: FontWeight.w800,
-        ),
+        style: AppFonts.montserrat24MediumWhite.copyWith(color: textColor, fontSize: 24, fontWeight: FontWeight.w800),
       );
     }
 
@@ -124,12 +104,7 @@ class OnBoardingHighlightedTitle extends StatelessWidget {
       TextSpan(
         text: prefix,
         style: AppFonts.montserrat30BoldBlack,
-        children: [
-          TextSpan(
-            text: last,
-            style: AppFonts.montserrat30BoldPrimary,
-          ),
-        ],
+        children: [TextSpan(text: last, style: AppFonts.montserrat30BoldPrimary)],
       ),
       textAlign: TextAlign.center,
     );
@@ -171,4 +146,3 @@ class OnBoardingDots extends StatelessWidget {
     );
   }
 }
-
