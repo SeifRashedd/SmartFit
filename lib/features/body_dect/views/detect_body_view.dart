@@ -14,89 +14,61 @@ class DetectBodyView extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: AppConstants.appPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text('Smart Fit', style: AppFonts.montserrat18BoldBlack),
-              SizedBox(height: 20),
-              Text(
-                "Let's map your body",
-                style: AppFonts.montserrat30BoldBlack,
-              ),
-              SizedBox(height: 15),
-              Text(
-                'Our AI analyzes your shape in seconds for personalized recommendations.',
-                style: AppFonts.montserrat14Regular64748B,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text('Smart Fit', style: AppFonts.montserrat18BoldBlack),
+                SizedBox(height: 20),
+                Text("Let's map your body", style: AppFonts.montserrat30BoldBlack, textAlign: TextAlign.center),
+                SizedBox(height: 15),
+                Text(
+                  'Our AI analyzes your shape in seconds for personalized recommendations.',
+                  style: AppFonts.montserrat14Regular64748B,
+                  textAlign: TextAlign.center,
                 ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE6F7FF),
-                  borderRadius: BorderRadius.circular(999),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(color: const Color(0xFFE6F7FF), borderRadius: BorderRadius.circular(999)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.lock_outline, size: 16, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Text('100% Private & Processed Locally', style: AppFonts.montserrat13BoldPrimary),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.lock_outline,
-                      size: 16,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '100% Private & Processed Locally',
-                      style: AppFonts.montserrat13BoldPrimary,
-                    ),
+                const SizedBox(height: 15),
+                Container(
+                  height: 270,
+                  margin: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset('assets/images/detect_body_image.png', fit: BoxFit.fill),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: const [
+                    InfoCardBodyDetect(assetPath: 'assets/images/hanger.png', title: 'Tight-fitting\nclothing'),
+                    InfoCardBodyDetect(assetPath: 'assets/images/sun.png', title: 'Good\nlighting'),
+                    InfoCardBodyDetect(assetPath: 'assets/images/person_stand.png', title: 'Stand\nfull body'),
                   ],
                 ),
-              ),
-              const SizedBox(height: 15),
-              Container(
-                height: 350,
-                margin: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
+                SizedBox(height: 40),
+                CustomButton(
+                  onPressed: () {},
+                  text: 'Start Body Scan',
+                  showIcon: true,
+                  icon: const Icon(Icons.man_rounded, size: 18),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(
-                    'assets/images/detect_body_image.png',
-                    fit: BoxFit.fill,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: const [
-                  InfoCardBodyDetect(
-                    assetPath: 'assets/images/hanger.png',
-                    title: 'Tight-fitting\nclothing',
-                  ),
-                  InfoCardBodyDetect(
-                    assetPath: 'assets/images/sun.png',
-                    title: 'Good\nlighting',
-                  ),
-                  InfoCardBodyDetect(
-                    assetPath: 'assets/images/person_stand.png',
-                    title: 'Stand\nfull body',
-                  ),
-                ],
-              ),
-              Spacer(),
-              CustomButton(
-                onPressed: () {},
-                text: 'Start Body Scan',
-                showIcon: true,
-                icon: const Icon(Icons.man_rounded, size: 18),
-              ),
-              const SizedBox(height: 20),
-            ],
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smartfit/features/app_settings/logic/app_settings_cubit.dart';
-import 'package:smartfit/features/app_settings/views/splash_screen.dart';
-import 'package:smartfit/features/body_dect/views/detect_body_view.dart';
+import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
 import 'package:smartfit/features/face_dect/views/detect_face_view.dart';
 
 void main() {
@@ -14,10 +13,7 @@ void main() {
   developer.log('[WidgetsFlutterBinding] Initialized', name: 'Main');
 
   // Set preferred orientations
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]).then((_) {
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]).then((_) {
     developer.log('[Main] Preferred orientations set', name: 'Main');
   });
 
@@ -33,13 +29,15 @@ class SmartFitApp extends StatelessWidget {
     developer.log('[SmartFitApp] Building app widget...', name: 'SmartFitApp');
 
     return MultiBlocProvider(
-      providers: [BlocProvider(create: (_) => AppSettingCubit())],
+      providers: [
+        BlocProvider(create: (_) => AppSettingCubit()),
+        BlocProvider(create: (_) => UserCubit()),
+      ],
       child: MaterialApp(
         theme: ThemeData(scaffoldBackgroundColor: Color(0xFFF5F7FA)),
         title: 'Smart Fit',
         debugShowCheckedModeBanner: false,
-        // home: const GenderView(),
-        home: const DetectBodyView(),
+        home: const DetectFaceView(),
       ),
     );
   }
