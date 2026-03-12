@@ -173,7 +173,7 @@ class _DetectFaceViewState extends State<DetectFaceView> {
                 Text("Let's map your face", style: AppFonts.montserrat30BoldBlack),
                 SizedBox(height: 15),
                 Text(
-                  'Our AI analyzes your facial features for personalized accessory and grooming recommendations.',
+                  'Our AI analyzes your face to predict your gender and make the shopping experience more easier.',
                   style: AppFonts.montserrat14Regular64748B,
                   textAlign: TextAlign.center,
                 ),

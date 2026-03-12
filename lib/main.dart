@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smartfit/features/app_settings/logic/app_settings_cubit.dart';
-import 'package:smartfit/features/app_settings/views/on_bording_view.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
-import 'package:smartfit/features/face_dect/views/detect_face_view.dart';
+import 'package:smartfit/features/user/views/home_view.dart';
 
 void main() {
   developer.log('[Main] Starting Smart Fit application...', name: 'Main');
@@ -38,8 +37,9 @@ class SmartFitApp extends StatelessWidget {
         theme: ThemeData(scaffoldBackgroundColor: Color(0xFFF5F7FA)),
         title: 'Smart Fit',
         debugShowCheckedModeBanner: false,
-        home: const OnBoardingView(),
+        // home: const OnBoardingView(),
+        home: const HomeView(),
       ),
     );
   }
-}
+} 

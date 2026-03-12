@@ -19,3 +19,15 @@ final class UserBodyUpdated extends UserState {
   final String topSize;
   final String bottomSize;
 }
+
+final class UserBudgetUpdated extends UserState {
+  UserBudgetUpdated({
+    required this.minBudget,
+    required this.maxBudget,
+    this.segment,
+  });
+
+  final double minBudget;
+  final double maxBudget;
+  final String? segment;
+}

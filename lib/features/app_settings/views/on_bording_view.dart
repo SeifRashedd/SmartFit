@@ -6,7 +6,6 @@ import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/features/app_settings/logic/app_settings_cubit.dart';
 import 'package:smartfit/features/app_settings/views/widgets/onboarding_page.dart';
 import 'package:smartfit/features/app_settings/views/widgets/onboarding_top_bar.dart';
-import 'package:smartfit/features/body_dect/views/body_detect_view.dart';
 import 'package:smartfit/core/widgets/custom_button.dart';
 import 'package:smartfit/features/face_dect/views/detect_face_view.dart';
 

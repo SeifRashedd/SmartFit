@@ -8,6 +8,9 @@ class UserCubit extends Cubit<UserState> {
   String? gender; // 'male' or 'female'
   String? topSize;
   String? bottomSize;
+  double? minBudget;
+  double? maxBudget;
+  String? budgetSegment;
 
   void setGender(String value) {
     gender = value;
@@ -21,5 +24,22 @@ class UserCubit extends Cubit<UserState> {
     topSize = top;
     bottomSize = bottom;
     emit(UserBodyUpdated(topSize: top, bottomSize: bottom));
+  }
+
+  void setBudget({
+    required double min,
+    required double max,
+    String? segment,
+  }) {
+    minBudget = min;
+    maxBudget = max;
+    budgetSegment = segment;
+    emit(
+      UserBudgetUpdated(
+        minBudget: minBudget!,
+        maxBudget: maxBudget!,
+        segment: budgetSegment,
+      ),
+    );
   }
 }
