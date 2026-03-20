@@ -7,7 +7,9 @@ class HomeViewItem extends StatelessWidget {
     super.key,
     required this.brand,
     required this.title,
+    required this.description,
     required this.price,
+    required this.imageUrl,
     required this.sizeLabel,
     required this.matchLabel,
     this.tagLabel,
@@ -15,7 +17,9 @@ class HomeViewItem extends StatelessWidget {
 
   final String brand;
   final String title;
+  final String description;
   final String price;
+  final String imageUrl;
   final String sizeLabel;
   final String matchLabel;
   final String? tagLabel;
@@ -38,7 +42,16 @@ class HomeViewItem extends StatelessWidget {
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               child: Stack(
                 children: [
-                  Container(width: double.infinity, color: const Color(0xFFE5F0FF)),
+                  Positioned.fill(
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        width: double.infinity,
+                        color: const Color(0xFFE5F0FF),
+                      ),
+                    ),
+                  ),
                   Positioned(
                     top: 10,
                     left: 10,
@@ -82,6 +95,17 @@ class HomeViewItem extends StatelessWidget {
                     fontSize: 13,
                     color: const Color(0xFF0F172A),
                     fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppFonts.montserrat14Regular64748B.copyWith(
+                    fontSize: 12,
+                    color: const Color(0xFF64748B),
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
                 const SizedBox(height: 6),

@@ -1,23 +1,24 @@
-import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:smartfit/features/app_settings/logic/app_settings_cubit.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
 import 'package:smartfit/features/user/views/home_view.dart';
 
-void main() {
-  developer.log('[Main] Starting Smart Fit application...', name: 'Main');
-
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  developer.log('[WidgetsFlutterBinding] Initialized', name: 'Main');
 
-  // Set preferred orientations
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]).then((_) {
-    developer.log('[Main] Preferred orientations set', name: 'Main');
-  });
+  const supabaseUrl = 'https://kudugwnmzsuiwhzqjuzo.supabase.co';
+  const supabaseAnonKey =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1ZHVnd25tenN1aXdoenFqdXpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NTc2MzYsImV4cCI6MjA4OTIzMzYzNn0.vyiwlOe4kVEzp70LLzUAtRjgN8TohSDSWSPdWRcpTYo';
 
-  developer.log('[Main] Running app...', name: 'Main');
+  await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   runApp(const SmartFitApp());
 }
 
@@ -26,8 +27,6 @@ class SmartFitApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    developer.log('[SmartFitApp] Building app widget...', name: 'SmartFitApp');
-
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => AppSettingCubit()),
@@ -42,4 +41,4 @@ class SmartFitApp extends StatelessWidget {
       ),
     );
   }
-} 
+}

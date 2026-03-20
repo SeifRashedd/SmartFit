@@ -11,23 +11,34 @@ final class UserGenderUpdated extends UserState {
 }
 
 final class UserBodyUpdated extends UserState {
-  UserBodyUpdated({
-    required this.topSize,
-    required this.bottomSize,
-  });
+  UserBodyUpdated({required this.topSize, required this.bottomSize});
 
   final String topSize;
   final String bottomSize;
 }
 
 final class UserBudgetUpdated extends UserState {
-  UserBudgetUpdated({
-    required this.minBudget,
-    required this.maxBudget,
-    this.segment,
-  });
+  UserBudgetUpdated({required this.minBudget, required this.maxBudget, this.segment});
 
   final double minBudget;
   final double maxBudget;
   final String? segment;
+}
+
+class GetUserClothesLoadingState extends UserState {}
+
+class GetUserClothesSuccessState extends UserState {
+  GetUserClothesSuccessState({required this.clothes});
+
+  final List<ClothesModel> clothes;
+}
+
+class GetUserClothesErrorState extends UserState {
+  final String errMsg;
+  GetUserClothesErrorState({required this.errMsg});
+}
+
+class GetUserClothesExceptionState extends UserState {
+  final String errMsg;
+  GetUserClothesExceptionState({required this.errMsg});
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smartfit/core/constants/app_constants.dart';
 import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/core/styles/app_fonts.dart';
 
@@ -8,6 +7,8 @@ class ItemDetailsView extends StatelessWidget {
     super.key,
     required this.brand,
     required this.title,
+    required this.description,
+    required this.imageUrl,
     required this.price,
     required this.sizeLabel,
     required this.matchLabel,
@@ -15,6 +16,8 @@ class ItemDetailsView extends StatelessWidget {
 
   final String brand;
   final String title;
+  final String description;
+  final String imageUrl;
   final String price;
   final String sizeLabel;
   final String matchLabel;
@@ -27,7 +30,16 @@ class ItemDetailsView extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            Positioned.fill(child: Container(color: const Color(0xFFE5F0FF))),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.fitWidth,
+                errorBuilder: (_, __, ___) => Container(color: const Color(0xFFE5F0FF)),
+              ),
+            ),
             Positioned(
               top: 16,
               left: 16,
@@ -137,6 +149,13 @@ class ItemDetailsView extends StatelessWidget {
                           ),
                         ],
                       ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      description,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppFonts.montserrat14Regular64748B.copyWith(fontSize: 13, color: const Color(0xFF64748B)),
                     ),
                     const SizedBox(height: 16),
                     Row(
