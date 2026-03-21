@@ -10,9 +10,15 @@ import 'package:smartfit/features/body_dect/views/detect_body_view.dart';
 import 'package:smartfit/features/face_dect/model/gender_view_model.dart';
 import 'package:smartfit/features/face_dect/widget/info_widget.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
+import 'package:smartfit/features/user/views/home_view.dart';
 
 class DetectFaceView extends StatefulWidget {
-  const DetectFaceView({super.key});
+  const DetectFaceView({
+    super.key,
+    this.goToBodyAfterScan = true,
+  });
+
+  final bool goToBodyAfterScan;
 
   @override
   State<DetectFaceView> createState() => _DetectFaceViewState();
@@ -133,7 +139,9 @@ class _DetectFaceViewState extends State<DetectFaceView> {
               Text(label, style: AppFonts.montserrat18BoldBlack.copyWith(fontSize: 18), textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Text(
-                'You can now continue to scan your body for even more accurate recommendations.',
+                widget.goToBodyAfterScan
+                    ? 'You can now continue to scan your body for even more accurate recommendations.'
+                    : 'Face scan updated successfully. You can continue to home.',
                 style: AppFonts.montserrat14Regular64748B,
                 textAlign: TextAlign.center,
               ),
@@ -143,9 +151,17 @@ class _DetectFaceViewState extends State<DetectFaceView> {
                 child: CustomButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DetectBodyView()));
+                    if (widget.goToBodyAfterScan) {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (_) => const DetectBodyView()),
+                      );
+                    } else {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (_) => const HomeView()),
+                      );
+                    }
                   },
-                  text: 'Continue',
+                  text: widget.goToBodyAfterScan ? 'Continue' : 'Go Home',
                   backgroundColor: color,
                   showIcon: true,
                   icon: const Icon(Icons.arrow_forward_rounded, size: 18),

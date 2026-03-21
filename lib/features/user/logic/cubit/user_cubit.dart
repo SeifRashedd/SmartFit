@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'models/clothes_model.dart';
@@ -8,6 +9,14 @@ part 'user_state.dart';
 class UserCubit extends Cubit<UserState> {
   UserCubit() : super(UserInitial());
 
+  static const _kSeenOnboarding = 'seen_onboarding';
+  static const _kGender = 'user_gender';
+  static const _kTopSize = 'user_top_size';
+  static const _kBottomSize = 'user_bottom_size';
+
+  SharedPreferences? _prefs;
+
+  bool hasSeenOnboarding = false;
   String? gender; // 'male' or 'female'
   String? topSize;
   String? bottomSize;
@@ -16,14 +25,34 @@ class UserCubit extends Cubit<UserState> {
   String? budgetSegment;
   List<ClothesModel> clothes = [];
 
+  Future<void> initData() async {
+    _prefs = await SharedPreferences.getInstance();
+
+    hasSeenOnboarding = _prefs?.getBool(_kSeenOnboarding) ?? false;
+    gender = _prefs?.getString(_kGender);
+    topSize = _prefs?.getString(_kTopSize);
+    bottomSize = _prefs?.getString(_kBottomSize);
+
+    emit(UserDataInitialized());
+  }
+
+  Future<void> setOnboardingSeen() async {
+    hasSeenOnboarding = true;
+    await _prefs?.setBool(_kSeenOnboarding, true);
+    emit(UserDataInitialized());
+  }
+
   void setGender(String value) {
     gender = value;
+    _prefs?.setString(_kGender, value);
     emit(UserGenderUpdated(value));
   }
 
   void setBodySizes({required String top, required String bottom}) {
     topSize = top;
     bottomSize = bottom;
+    _prefs?.setString(_kTopSize, top);
+    _prefs?.setString(_kBottomSize, bottom);
     emit(UserBodyUpdated(topSize: top, bottomSize: bottom));
   }
 
