@@ -48,9 +48,7 @@ class _HomeViewState extends State<HomeView> {
                   onTap: () {
                     Navigator.of(context).pop();
                     Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (_) => const DetectFaceView(goToBodyAfterScan: false),
-                      ),
+                      MaterialPageRoute(builder: (_) => const DetectFaceView(goToBodyAfterScan: false)),
                     );
                   },
                 ),
@@ -59,9 +57,7 @@ class _HomeViewState extends State<HomeView> {
                   title: const Text('Scan Body Again'),
                   onTap: () {
                     Navigator.of(context).pop();
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const DetectBodyView()),
-                    );
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const DetectBodyView()));
                   },
                 ),
                 ListTile(
@@ -69,9 +65,7 @@ class _HomeViewState extends State<HomeView> {
                   title: const Text('Scan Both (Face + Body)'),
                   onTap: () {
                     Navigator.of(context).pop();
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const DetectFaceView()),
-                    );
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const DetectFaceView()));
                   },
                 ),
               ],
@@ -168,6 +162,7 @@ class _HomeViewState extends State<HomeView> {
                                   description: item.description,
                                   imageUrl: item.image,
                                   price: staticPrice,
+                                  isUpper: item.isUpper,
                                   sizeLabel: item.size,
                                   matchLabel: staticMatchLabel,
                                 ),

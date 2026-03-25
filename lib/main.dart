@@ -17,10 +17,7 @@ Future<void> main() async {
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1ZHVnd25tenN1aXdoenFqdXpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NTc2MzYsImV4cCI6MjA4OTIzMzYzNn0.vyiwlOe4kVEzp70LLzUAtRjgN8TohSDSWSPdWRcpTYo';
 
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   final userCubit = UserCubit();
   await userCubit.initData();
@@ -29,22 +26,24 @@ Future<void> main() async {
 }
 
 class SmartFitApp extends StatelessWidget {
-  const SmartFitApp({super.key, required this.userCubit});
+  const SmartFitApp({super.key, this.userCubit});
 
-  final UserCubit userCubit;
+  final UserCubit? userCubit;
 
   @override
   Widget build(BuildContext context) {
+    final appUserCubit = userCubit ?? UserCubit();
+
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => AppSettingCubit()),
-        BlocProvider.value(value: userCubit),
+        BlocProvider.value(value: appUserCubit),
       ],
       child: MaterialApp(
         theme: ThemeData(scaffoldBackgroundColor: Color(0xFFF5F7FA)),
         title: 'Smart Fit',
         debugShowCheckedModeBanner: false,
-        home: _resolveInitialView(userCubit),
+        home: userCubit == null ? const OnBoardingView() : _resolveInitialView(appUserCubit),
       ),
     );
   }
@@ -55,8 +54,7 @@ class SmartFitApp extends StatelessWidget {
     }
 
     final hasGender = (userCubit.gender ?? '').isNotEmpty;
-    final hasBody = (userCubit.topSize ?? '').isNotEmpty &&
-        (userCubit.bottomSize ?? '').isNotEmpty;
+    final hasBody = (userCubit.topSize ?? '').isNotEmpty && (userCubit.bottomSize ?? '').isNotEmpty;
 
     if (hasGender && hasBody) {
       return const HomeView();

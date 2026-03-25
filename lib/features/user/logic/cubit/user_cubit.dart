@@ -24,6 +24,7 @@ class UserCubit extends Cubit<UserState> {
   double? maxBudget;
   String? budgetSegment;
   List<ClothesModel> clothes = [];
+  List<ClothesModel> clothesAfterFillter = [];
 
   Future<void> initData() async {
     _prefs = await SharedPreferences.getInstance();
@@ -45,6 +46,7 @@ class UserCubit extends Cubit<UserState> {
   void setGender(String value) {
     gender = value;
     _prefs?.setString(_kGender, value);
+    filtterClothes();
     emit(UserGenderUpdated(value));
   }
 
@@ -61,6 +63,19 @@ class UserCubit extends Cubit<UserState> {
     maxBudget = max;
     budgetSegment = segment;
     emit(UserBudgetUpdated(minBudget: minBudget!, maxBudget: maxBudget!, segment: budgetSegment));
+  }
+
+  void filtterClothes() {
+    final normalizedGender = (gender ?? '').toLowerCase();
+    if (normalizedGender == 'male') {
+      clothesAfterFillter = clothes.where((item) => item.isMale).toList();
+      return;
+    }
+    if (normalizedGender == 'female') {
+      clothesAfterFillter = clothes.where((item) => !item.isMale).toList();
+      return;
+    }
+    clothesAfterFillter = List<ClothesModel>.from(clothes);
   }
 
   Future<void> getUserClothes() async {
@@ -88,7 +103,8 @@ class UserCubit extends Cubit<UserState> {
       }
 
       clothes = parsedClothes;
-      emit(GetUserClothesSuccessState(clothes: parsedClothes));
+      filtterClothes();
+      emit(GetUserClothesSuccessState(clothes: clothesAfterFillter));
     } on AssertionError {
       // Happens when `Supabase.initialize(...)` was not called in `main.dart`.
       emit(

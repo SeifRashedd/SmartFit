@@ -7,8 +7,8 @@ import 'package:smartfit/features/app_settings/logic/app_settings_cubit.dart';
 import 'package:smartfit/features/app_settings/views/widgets/onboarding_page.dart';
 import 'package:smartfit/features/app_settings/views/widgets/onboarding_top_bar.dart';
 import 'package:smartfit/core/widgets/custom_button.dart';
-import 'package:smartfit/features/face_dect/views/detect_face_view.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
+import 'package:smartfit/features/user/views/set_budget_view.dart';
 
 class OnBoardingView extends StatefulWidget {
   const OnBoardingView({super.key});
@@ -38,7 +38,7 @@ class _OnBoardingViewState extends State<OnBoardingView> {
     if (!mounted) return;
     Navigator.of(
       context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => DetectFaceView()));
+    ).pushReplacement(MaterialPageRoute(builder: (_) => SetBudgetView()));
   }
 
   void _primaryCtaPressed() {

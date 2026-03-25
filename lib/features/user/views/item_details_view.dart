@@ -1,6 +1,18 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/core/styles/app_fonts.dart';
+import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
+
+/// Demo-only: stable "random" rating + review count per product (no DB field yet).
+({double rating, int reviewCount}) _fakeRatingReviews(String seed) {
+  final random = Random(seed.hashCode);
+  final rating = 3.9 + random.nextDouble() * 1.35; // ~3.9 – 4.95
+  final reviewCount = 12 + random.nextInt(300); // 12 – 300
+  return (rating: (rating * 10).round() / 10, reviewCount: reviewCount);
+}
 
 class ItemDetailsView extends StatelessWidget {
   const ItemDetailsView({
@@ -10,6 +22,7 @@ class ItemDetailsView extends StatelessWidget {
     required this.description,
     required this.imageUrl,
     required this.price,
+    required this.isUpper,
     required this.sizeLabel,
     required this.matchLabel,
   });
@@ -19,12 +32,19 @@ class ItemDetailsView extends StatelessWidget {
   final String description;
   final String imageUrl;
   final String price;
+
+  /// `true` = top / upper body item → use [UserCubit.topSize]; else [UserCubit.bottomSize].
+  final bool isUpper;
   final String sizeLabel;
   final String matchLabel;
 
   @override
   Widget build(BuildContext context) {
     final primary = AppColors.primary;
+    final fake = _fakeRatingReviews('$brand|$title|$imageUrl');
+    final userCubit = context.read<UserCubit>();
+    final profileFit = isUpper ? userCubit.topSize : userCubit.bottomSize;
+    final recommendedSize = (profileFit != null && profileFit.trim().isNotEmpty) ? profileFit.trim() : sizeLabel;
 
     return Scaffold(
       body: SafeArea(
@@ -38,8 +58,7 @@ class ItemDetailsView extends StatelessWidget {
               child: Image.network(
                 imageUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    Container(color: const Color(0xFFE5F0FF)),
+                errorBuilder: (_, __, ___) => Container(color: const Color(0xFFE5F0FF)),
               ),
             ),
             Positioned(
@@ -88,15 +107,13 @@ class ItemDetailsView extends StatelessWidget {
                                 children: [
                                   Text(
                                     brand.toUpperCase(),
-                                    style: AppFonts.montserrat13BoldPrimary
-                                        .copyWith(
+                                    style: AppFonts.montserrat13BoldPrimary.copyWith(
                                       fontSize: 11,
                                       color: const Color(0xFF94A3B8),
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  Text(title,
-                                      style: AppFonts.montserrat20BoldBlack),
+                                  Text(title, style: AppFonts.montserrat20BoldBlack),
                                 ],
                               ),
                             ),
@@ -107,26 +124,24 @@ class ItemDetailsView extends StatelessWidget {
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.star_rounded,
-                                        color: Color(0xFFFACC15), size: 16),
+                                    const Icon(Icons.star_rounded, color: Color(0xFFFACC15), size: 16),
                                     const SizedBox(width: 4),
                                     Text(
-                                      '4.8',
-                                      style: AppFonts.montserrat14Regular64748B
-                                          .copyWith(
+                                      fake.rating.toStringAsFixed(1),
+                                      style: AppFonts.montserrat14Regular64748B.copyWith(
                                         fontWeight: FontWeight.w600,
                                         color: const Color(0xFF0F172A),
                                       ),
                                     ),
                                     const SizedBox(width: 4),
-                                    Text('(120 reviews)',
-                                        style: AppFonts
-                                            .montserrat14Regular64748B
-                                            .copyWith(fontSize: 11)),
+                                    Text(
+                                      '(${fake.reviewCount} reviews)',
+                                      style: AppFonts.montserrat14Regular64748B.copyWith(fontSize: 11),
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 8),
-                                Text(price, style: AppFonts.montserrat20BoldBlack),
+                                // Text(price, style: AppFonts.montserrat20BoldBlack),
                               ],
                             ),
                           ],
@@ -146,10 +161,10 @@ class ItemDetailsView extends StatelessWidget {
                                 width: 32,
                                 height: 32,
                                 decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(999)),
-                                child: Icon(Icons.analytics_rounded,
-                                    color: primary, size: 18),
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Icon(Icons.analytics_rounded, color: primary, size: 18),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
@@ -158,21 +173,17 @@ class ItemDetailsView extends StatelessWidget {
                                   children: [
                                     Text(
                                       'AI Sizing Analysis',
-                                      style: AppFonts.montserrat13BoldPrimary
-                                          .copyWith(
-                                              color: const Color(0xFF0F172A)),
+                                      style: AppFonts.montserrat13BoldPrimary.copyWith(color: const Color(0xFF0F172A)),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      '$matchLabel match for your profile. Based on your SmartFit size, we recommend $sizeLabel for a regular fit.',
-                                      style: AppFonts.montserrat14Regular64748B
-                                          .copyWith(fontSize: 12),
+                                      '$matchLabel match for your profile. Based on your SmartFit size, we recommend $recommendedSize for a regular fit.',
+                                      style: AppFonts.montserrat14Regular64748B.copyWith(fontSize: 12),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       'Is this right?',
-                                      style: AppFonts.montserrat13BoldPrimary
-                                          .copyWith(color: primary),
+                                      style: AppFonts.montserrat13BoldPrimary.copyWith(color: primary),
                                     ),
                                   ],
                                 ),
@@ -192,14 +203,13 @@ class ItemDetailsView extends StatelessWidget {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF1F5F9),
                                 borderRadius: BorderRadius.circular(999),
                               ),
                               child: Text(
-                                'Recommended size: $sizeLabel',
+                                'Recommended size: $recommendedSize',
                                 style: AppFonts.montserrat13BoldPrimary.copyWith(
                                   fontSize: 12,
                                   color: const Color(0xFF0F172A),
