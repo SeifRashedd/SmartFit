@@ -24,7 +24,10 @@ class BodyDetectModel extends ChangeNotifier {
     await _poseService.loadModel();
   }
 
-  Future<void> analyzeBody(File image) async {
+  /// [imageWidth] and [imageHeight] are the actual pixel dimensions of the
+  /// captured image — required for correct normalisation.
+  Future<void> analyzeBody(File image,
+      {double imageWidth = 192, double imageHeight = 256}) async {
     loading = true;
     error = null;
     topSize = null;
@@ -47,49 +50,59 @@ class BodyDetectModel extends ChangeNotifier {
         return;
       }
 
-      // MoveNet: coordinates are normalized 0.0–1.0; rescale if model outputs 0–192
-      final kNorm = _normalizeKeypoints(k);
+      // ── FIX 1: Normalise X and Y by their OWN dimension ──────────────────
+      // MoveNet outputs coordinates in the input tensor space (e.g. 192×192 or
+      // 256×256). Dividing both axes by the same max value was wrong when the
+      // image is not square — it distorted the Y axis.
+      final kNorm = _normalizeKeypoints(k, imageWidth, imageHeight);
 
-      // MoveNet keypoint order: 0 nose, 1 L eye, 2 R eye, 3 L ear, 4 R ear,
-      // 5 L shoulder, 6 R shoulder, 7 L elbow, 8 R elbow, 9 L wrist, 10 R wrist,
-      // 11 L hip, 12 R hip, 13 L knee, 14 R knee, 15 L ankle, 16 R ankle
+      // MoveNet keypoint order:
+      // 0 nose | 1 L eye | 2 R eye | 3 L ear | 4 R ear
+      // 5 L shoulder | 6 R shoulder | 7 L elbow | 8 R elbow
+      // 9 L wrist | 10 R wrist | 11 L hip | 12 R hip
+      // 13 L knee | 14 R knee | 15 L ankle | 16 R ankle
       final nose = kNorm[0];
-      final ls = kNorm[5];
-      final rs = kNorm[6];
-      final lh = kNorm[11];
-      final rh = kNorm[12];
-      final la = kNorm[15];
-      final ra = kNorm[16];
+      final ls   = kNorm[5];
+      final rs   = kNorm[6];
+      final lh   = kNorm[11];
+      final rh   = kNorm[12];
+      final la   = kNorm[15];
+      final ra   = kNorm[16];
 
       if (!_valid(ls, rs, lh, rh, la, ra)) {
-        error = 'Please stand fully inside the frame';
+        error = 'Please stand fully inside the frame and face the camera';
         loading = false;
         notifyListeners();
         return;
       }
 
-      final avgAnkle = _avg(la, ra);
+      final avgAnkle    = _avg(la, ra);
       final avgShoulder = _avg(ls, rs);
-      final avgHip = _avg(lh, rh);
+      final avgHip      = _avg(lh, rh);
 
-      // ── HEIGHT: vertical (Y-axis) only ──────────────────────────────────────
-      // MoveNet: Y increases downward → ankle_y > nose_y for a standing person
-      final fullBodyHeight = _vDist(nose, avgAnkle);
+      // ── FIX 2: Estimate top-of-head instead of using nose ────────────────
+      // The nose sits ~10-15% below the top of the head. We estimate the head
+      // top by going upward from the nose by half the nose-to-shoulder distance.
+      final noseToShoulderV = _vDist(nose, avgShoulder);
+      final headTopY        = nose['y']! - (noseToShoulderV * 0.5);
+      final headTop         = {'x': nose['x']!, 'y': headTopY};
+
+      final fullBodyHeight = _vDist(headTop, avgAnkle);
       if (fullBodyHeight == 0) {
-        error = 'Unable to calculate body measurements. Please try again.';
+        error = 'Unable to calculate body height. Please try again.';
         loading = false;
         notifyListeners();
         return;
       }
 
-      // ── WIDTHS: horizontal (X-axis) only ────────────────────────────────────
-      // Using shoulder-to-shoulder for tops, hip-to-hip for bottoms.
-      // Elbows/wrists are NOT averaged in: they reflect arm position, not body width.
-      shoulderWidth = _hDist(ls, rs);
-      hipWidth = _hDist(lh, rh);
+      // ── FIX 3: Use Euclidean distance for widths ──────────────────────────
+      // Pure horizontal distance breaks when the person is even slightly
+      // tilted. Euclidean handles mild tilt correctly.
+      shoulderWidth = _dist(ls, rs);
+      hipWidth      = _dist(lh, rh);
 
       torsoHeight = _vDist(avgShoulder, avgHip);
-      legLength = _vDist(avgHip, avgAnkle);
+      legLength   = _vDist(avgHip, avgAnkle);
 
       if (torsoHeight == 0 && legLength == 0) {
         error = 'Unable to calculate body measurements. Please try again.';
@@ -98,9 +111,9 @@ class BodyDetectModel extends ChangeNotifier {
         return;
       }
 
-      // ── RATIOS: width / full body height (both in 0–1 normalized space) ─────
+      // ── RATIOS: width / full body height (both in 0–1 normalised space) ──
       upperRatio = shoulderWidth! / fullBodyHeight;
-      lowerRatio = hipWidth! / fullBodyHeight;
+      lowerRatio = hipWidth!      / fullBodyHeight;
 
       developer.log(
         'Measurements — '
@@ -119,9 +132,9 @@ class BodyDetectModel extends ChangeNotifier {
         '(${(lowerRatio! * 100).toStringAsFixed(1)}%)',
         name: 'BodyDetectModel',
       );
-      // Keypoint summary for calibration
       developer.log(
         'Keypoints — '
+        'headTop:(${headTop["x"]!.toStringAsFixed(3)},${headTop["y"]!.toStringAsFixed(3)}) '
         'nose:(${nose["x"]!.toStringAsFixed(3)},${nose["y"]!.toStringAsFixed(3)}) '
         'ls:(${ls["x"]!.toStringAsFixed(3)},${ls["y"]!.toStringAsFixed(3)}) '
         'rs:(${rs["x"]!.toStringAsFixed(3)},${rs["y"]!.toStringAsFixed(3)}) '
@@ -132,7 +145,7 @@ class BodyDetectModel extends ChangeNotifier {
         name: 'BodyDetectModel',
       );
 
-      topSize = _mapTopSize(upperRatio!);
+      topSize    = _mapTopSize(upperRatio!);
       bottomSize = _mapBottomSize(lowerRatio!);
 
       developer.log(
@@ -151,16 +164,25 @@ class BodyDetectModel extends ChangeNotifier {
 
   // ── Validation ─────────────────────────────────────────────────────────────
 
-  bool _valid(Map a, Map b, Map c, Map d, Map e, Map f) {
-    final points = [a, b, c, d, e, f];
+  /// FIX 4: Use AND (&&) instead of OR (||) for shoulder and hip validation.
+  /// Both shoulders AND both hips must be visible for accurate width measurement.
+  bool _valid(Map ls, Map rs, Map lh, Map rh, Map la, Map ra) {
+    final points = [ls, rs, lh, rh, la, ra];
     final scores = points.map((p) => p['score'] as double).toList();
 
     final validCount = scores.where((s) => s > 0.3).length;
-    final shoulderValid = scores[0] > 0.3 || scores[1] > 0.3;
-    final hipValid = scores[2] > 0.3 || scores[3] > 0.3;
+
+    // Both shoulders must be clearly visible
+    final shoulderValid = scores[0] > 0.3 && scores[1] > 0.3;
+    // Both hips must be clearly visible
+    final hipValid      = scores[2] > 0.3 && scores[3] > 0.3;
 
     developer.log(
-      'Validation — Valid: $validCount/6, Shoulders: $shoulderValid, Hips: $hipValid',
+      'Validation — '
+      'Valid: $validCount/6, '
+      'Scores: ${scores.map((s) => s.toStringAsFixed(2)).toList()}, '
+      'Shoulders: $shoulderValid, '
+      'Hips: $hipValid',
       name: 'BodyDetectModel',
     );
 
@@ -169,20 +191,27 @@ class BodyDetectModel extends ChangeNotifier {
 
   // ── Normalisation ──────────────────────────────────────────────────────────
 
-  /// MoveNet Lightning/Thunder outputs coords already in [0,1].
-  /// Only rescale when the values are clearly in pixel space (max > 1.5).
-  List<Map<String, double>> _normalizeKeypoints(List<Map<String, double>> k) {
-    double maxCoord = 0;
+  /// FIX 1 (core): Divide X by imageWidth and Y by imageHeight independently.
+  /// Using a single maxCoord for both axes was wrong for non-square images and
+  /// caused the Y axis to be scaled incorrectly.
+  List<Map<String, double>> _normalizeKeypoints(
+    List<Map<String, double>> k,
+    double imgW,
+    double imgH,
+  ) {
+    // Check if already normalised (all coords already in 0–1 range)
+    double maxX = 0, maxY = 0;
     for (final p in k) {
-      if (p['x']! > maxCoord) maxCoord = p['x']!;
-      if (p['y']! > maxCoord) maxCoord = p['y']!;
+      if (p['x']! > maxX) maxX = p['x']!;
+      if (p['y']! > maxY) maxY = p['y']!;
     }
-    if (maxCoord <= 1.5) return k; // already normalized
+    if (maxX <= 1.5 && maxY <= 1.5) return k; // already normalised
+
     return k
         .map(
           (p) => {
-            'x': (p['x']! / maxCoord).clamp(0.0, 1.0),
-            'y': (p['y']! / maxCoord).clamp(0.0, 1.0),
+            'x':     (p['x']! / imgW).clamp(0.0, 1.0),
+            'y':     (p['y']! / imgH).clamp(0.0, 1.0),
             'score': p['score']!,
           },
         )
@@ -191,10 +220,12 @@ class BodyDetectModel extends ChangeNotifier {
 
   // ── Distance helpers ───────────────────────────────────────────────────────
 
-  /// Horizontal distance only (for widths: shoulder, hip, etc.)
-  double _hDist(Map a, Map b) => (a['x']! - b['x']!).abs();
+  /// FIX 3: Euclidean distance — use for shoulder width, hip width.
+  /// Handles slight body tilt that pure horizontal distance cannot.
+  double _dist(Map a, Map b) =>
+      sqrt(pow(a['x']! - b['x']!, 2) + pow(a['y']! - b['y']!, 2));
 
-  /// Vertical distance only (for heights: body height, torso, legs)
+  /// Vertical distance only — still correct for body height, torso, legs.
   double _vDist(Map a, Map b) => (a['y']! - b['y']!).abs();
 
   Map<String, double> _avg(Map a, Map b) => {
@@ -202,38 +233,43 @@ class BodyDetectModel extends ChangeNotifier {
     'y': (a['y']! + b['y']!) / 2,
   };
 
-  // Keep Euclidean for any diagonal measurements if needed elsewhere
+  // Horizontal-only kept for reference but no longer used in calculations.
   // ignore: unused_element
-  double _dist(Map a, Map b) =>
-      sqrt(pow(a['x']! - b['x']!, 2) + pow(a['y']! - b['y']!, 2));
+  double _hDist(Map a, Map b) => (a['x']! - b['x']!).abs();
 
   // ── Size mapping ───────────────────────────────────────────────────────────
 
-  /// r = shoulderWidth / bodyHeight (both horizontal-only, normalized 0–1 coords)
+  /// r = shoulderWidth (Euclidean) / bodyHeight (vertical, head-top to ankle)
   ///
-  /// These thresholds are derived from real-world MoveNet observations:
-  ///   A typical adult standing at arm's length from camera:
-  ///   - Shoulder span ≈ 20–35% of body height
-  ///   - Children and slim adults: lower end (~0.20)
-  ///   - Broad/large adults: higher end (~0.35+)
+  /// Standard real-world shoulder-to-height ratios:
+  ///   Shoulder width is roughly 23–27% of body height for most adults.
+  ///   - Slim / small frame : ~0.22–0.24
+  ///   - Medium frame        : ~0.24–0.27
+  ///   - Broad / large frame : ~0.28+
   ///
-  /// If the range feels off after testing, log upperRatio and adjust here.
+  /// Calibration tip: Log upperRatio for 5–10 real people of known sizes
+  /// and adjust these thresholds to match your camera setup.
   String _mapTopSize(double r) {
-    if (r < 0.20) return 'S';
-    if (r < 0.24) return 'M';
+    if (r < 0.22) return 'S';
+    if (r < 0.25) return 'M';
     if (r < 0.28) return 'L';
-    if (r < 0.33) return 'XL';
-    if (r < 0.38) return 'XXL';
+    if (r < 0.31) return 'XL';
+    if (r < 0.35) return 'XXL';
     return 'XXXL';
   }
 
-  /// r = hipWidth / bodyHeight (both horizontal-only, normalized 0–1 coords)
+  /// r = hipWidth (Euclidean) / bodyHeight (vertical, head-top to ankle)
+  ///
+  /// Hip-to-height ratio is typically slightly smaller than shoulder ratio:
+  ///   - Slim : ~0.17–0.19
+  ///   - Medium: ~0.19–0.23
+  ///   - Large : ~0.24+
   String _mapBottomSize(double r) {
-    if (r < 0.17) return 'S';
-    if (r < 0.21) return 'M';
-    if (r < 0.25) return 'L';
+    if (r < 0.19) return 'S';
+    if (r < 0.22) return 'M';
+    if (r < 0.26) return 'L';
     if (r < 0.30) return 'XL';
-    if (r < 0.35) return 'XXL';
+    if (r < 0.34) return 'XXL';
     return 'XXXL';
   }
 }

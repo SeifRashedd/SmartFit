@@ -21,7 +21,7 @@ class ItemDetailsView extends StatelessWidget {
     required this.title,
     required this.description,
     required this.imageUrl,
-    required this.price,
+    // required this.price,
     required this.isUpper,
     required this.sizeLabel,
     required this.matchLabel,
@@ -31,7 +31,7 @@ class ItemDetailsView extends StatelessWidget {
   final String title;
   final String description;
   final String imageUrl;
-  final String price;
+  // final String price;
 
   /// `true` = top / upper body item → use [UserCubit.topSize]; else [UserCubit.bottomSize].
   final bool isUpper;
@@ -54,7 +54,7 @@ class ItemDetailsView extends StatelessWidget {
               top: 0,
               left: 0,
               right: 0,
-              bottom: 0,
+              bottom: 230,
               child: Image.network(
                 imageUrl,
                 fit: BoxFit.cover,

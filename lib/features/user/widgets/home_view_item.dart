@@ -8,7 +8,7 @@ class HomeViewItem extends StatelessWidget {
     required this.brand,
     required this.title,
     required this.description,
-    required this.price,
+    // required this.price,
     required this.imageUrl,
     required this.sizeLabel,
     required this.matchLabel,
@@ -18,7 +18,7 @@ class HomeViewItem extends StatelessWidget {
   final String brand;
   final String title;
   final String description;
-  final String price;
+  // final String price;
   final String imageUrl;
   final String sizeLabel;
   final String matchLabel;
@@ -46,10 +46,7 @@ class HomeViewItem extends StatelessWidget {
                     child: Image.network(
                       imageUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        width: double.infinity,
-                        color: const Color(0xFFE5F0FF),
-                      ),
+                      errorBuilder: (_, __, ___) => Container(width: double.infinity, color: const Color(0xFFE5F0FF)),
                     ),
                   ),
                   Positioned(
@@ -109,30 +106,6 @@ class HomeViewItem extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      price,
-                      style: AppFonts.montserrat14Regular64748B.copyWith(
-                        fontSize: 14,
-                        color: const Color(0xFF0F172A),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE0F2FE),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        sizeLabel,
-                        style: AppFonts.montserrat13BoldPrimary.copyWith(fontSize: 11, color: AppColors.primary),
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
           ),

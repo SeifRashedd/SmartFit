@@ -27,7 +27,7 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
-    const staticPrice = '\$45.00';
+    // const staticPrice = '\$45.00';
     const staticMatchLabel = '98% Match';
 
     return Scaffold(
@@ -161,7 +161,7 @@ class _HomeViewState extends State<HomeView> {
                                   title: item.title,
                                   description: item.description,
                                   imageUrl: item.image,
-                                  price: staticPrice,
+                                  // price: staticPrice,
                                   isUpper: item.isUpper,
                                   sizeLabel: item.size,
                                   matchLabel: staticMatchLabel,
@@ -174,7 +174,7 @@ class _HomeViewState extends State<HomeView> {
                             title: item.title,
                             description: item.description,
                             imageUrl: item.image,
-                            price: staticPrice,
+                            // price: staticPrice,
                             sizeLabel: item.size,
                             matchLabel: staticMatchLabel,
                             tagLabel: item.isUpper ? 'Top Pick' : null,
