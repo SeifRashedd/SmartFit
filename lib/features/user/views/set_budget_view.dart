@@ -6,7 +6,8 @@ import 'package:smartfit/core/styles/app_fonts.dart';
 import 'package:smartfit/core/widgets/custom_button.dart';
 import 'package:smartfit/features/face_dect/views/detect_face_view.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
-import 'package:smartfit/features/user/views/home_view.dart';
+import 'package:smartfit/features/user/views/login_view.dart';
+// import 'package:smartfit/features/user/views/home_view.dart';
 
 class SetBudgetView extends StatefulWidget {
   const SetBudgetView({super.key});
@@ -89,7 +90,7 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                   TextButton(
                     onPressed: () => Navigator.of(
                       context,
-                    ).pushReplacement(MaterialPageRoute(builder: (_) => const DetectFaceView())),
+                    ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginView())),
                     child: Text('Skip', style: AppFonts.montserrat14Regular64748B),
                   ),
                 ],

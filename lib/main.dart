@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smartfit/features/user/views/login_view.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:smartfit/features/app_settings/logic/app_settings_cubit.dart';
 import 'package:smartfit/features/app_settings/views/on_bording_view.dart';
-import 'package:smartfit/features/body_dect/views/detect_body_view.dart';
-import 'package:smartfit/features/face_dect/views/detect_face_view.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
-import 'package:smartfit/features/user/views/home_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,16 +50,6 @@ class SmartFitApp extends StatelessWidget {
     if (!userCubit.hasSeenOnboarding) {
       return const OnBoardingView();
     }
-
-    final hasGender = (userCubit.gender ?? '').isNotEmpty;
-    final hasBody = (userCubit.topSize ?? '').isNotEmpty && (userCubit.bottomSize ?? '').isNotEmpty;
-
-    if (hasGender && hasBody) {
-      return const HomeView();
-    }
-    if (hasGender) {
-      return const DetectBodyView();
-    }
-    return const DetectFaceView();
+    return const LoginView();
   }
 }
