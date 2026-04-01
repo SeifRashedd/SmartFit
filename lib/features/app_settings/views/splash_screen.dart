@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/features/app_settings/views/on_bording_view.dart';
 import 'package:smartfit/features/auth/views/login_view.dart';
+import 'package:smartfit/features/user/views/home_view.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -16,18 +19,40 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _navigateToOnboarding();
+    _handleRouting();
   }
 
-  Future<void> _navigateToOnboarding() async {
+  Future<void> _handleRouting() async {
     await Future.delayed(const Duration(seconds: 1));
 
     if (!mounted) return;
 
-    final hasSeenOnboarding = context.read<UserCubit>().hasSeenOnboarding;
-    final nextScreen = hasSeenOnboarding ? const LoginView() : const OnBoardingView();
+    final prefs = await SharedPreferences.getInstance();
+    final rememberMe = prefs.getBool('remember_me') ?? false;
 
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => nextScreen));
+    final session = Supabase.instance.client.auth.currentSession;
+
+    final hasSeenOnboarding = context.read<UserCubit>().hasSeenOnboarding;
+
+    Widget nextScreen;
+
+    /// 🔥 PRIORITY: Logged in + Remember me
+    if (rememberMe && session != null) {
+      nextScreen = const HomeView();
+    } 
+    /// onboarding
+    else if (!hasSeenOnboarding) {
+      nextScreen = const OnBoardingView();
+    } 
+    /// default
+    else {
+      nextScreen = const LoginView();
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => nextScreen),
+    );
   }
 
   @override
@@ -53,11 +78,19 @@ class _SplashContent extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(22),
-            boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.20), blurRadius: 22)],
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.20),
+                blurRadius: 22,
+              )
+            ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(22 - 8),
-            child: Image.asset('assets/images/Smart_fit_logo.png', fit: BoxFit.fill),
+            borderRadius: BorderRadius.circular(14),
+            child: Image.asset(
+              'assets/images/Smart_fit_logo.png',
+              fit: BoxFit.fill,
+            ),
           ),
         ),
       ],

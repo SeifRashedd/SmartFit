@@ -3,6 +3,7 @@ part of 'user_cubit.dart';
 sealed class UserState {}
 
 final class UserInitial extends UserState {}
+
 final class UserDataInitialized extends UserState {}
 
 final class UserGenderUpdated extends UserState {
@@ -43,3 +44,5 @@ class GetUserClothesExceptionState extends UserState {
   final String errMsg;
   GetUserClothesExceptionState({required this.errMsg});
 }
+
+final class UserLoggedOut extends UserState {}

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smartfit/core/constants/app_constants.dart';
 import 'package:smartfit/core/styles/app_fonts.dart';
+import 'package:smartfit/core/widgets/styled_dialog.dart';
+import 'package:smartfit/features/auth/cubit/auth_cubit.dart';
+import 'package:smartfit/features/auth/views/login_view.dart';
 import 'package:smartfit/features/body_dect/views/detect_body_view.dart';
 import 'package:smartfit/features/face_dect/views/detect_face_view.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
@@ -66,6 +69,26 @@ class _HomeViewState extends State<HomeView> {
                   onTap: () {
                     Navigator.of(context).pop();
                     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const DetectFaceView()));
+                  },
+                ),
+                const Spacer(),
+                ListTile(
+                  leading: const Icon(Icons.logout_rounded),
+                  title: const Text('Logout'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    showConfirmationDialog(
+                      context,
+                      title: 'Logout',
+                      message: 'Are you sure you want to logout?',
+                      confirmText: 'Logout',
+                      cancelText: 'Cancel',
+                      onConfirm: () async {
+                        await context.read<UserCubit>().logout();
+                        await context.read<AuthCubit>().signOut();
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginView()));
+                      },
+                    );
                   },
                 ),
               ],

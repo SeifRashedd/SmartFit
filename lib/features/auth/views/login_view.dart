@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartfit/core/constants/app_constants.dart';
+import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/core/styles/app_fonts.dart';
 import 'package:smartfit/core/widgets/custom_button.dart';
 import 'package:smartfit/core/widgets/styled_dialog.dart';
@@ -23,6 +25,8 @@ class _LoginViewState extends State<LoginView> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  bool _rememberMe = false;
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -30,9 +34,12 @@ class _LoginViewState extends State<LoginView> {
     super.dispose();
   }
 
-  void _onLoginPressed() {
+  void _onLoginPressed() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('remember_me', _rememberMe);
 
     context.read<AuthCubit>().signIn(email: _emailController.text.trim(), password: _passwordController.text.trim());
   }
@@ -50,8 +57,11 @@ class _LoginViewState extends State<LoginView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 40),
+
                 const AuthHeader(title: 'Welcome Back', subtitle: 'Sign in to continue your SmartFit journey.'),
+
                 const SizedBox(height: 28),
+
                 AuthTextFormField(
                   hintText: 'Email address',
                   keyboardType: TextInputType.emailAddress,
@@ -59,7 +69,9 @@ class _LoginViewState extends State<LoginView> {
                   controller: _emailController,
                   validator: AuthValidators.email,
                 ),
+
                 const SizedBox(height: 14),
+
                 AuthTextFormField(
                   hintText: 'Password',
                   obscureText: true,
@@ -67,7 +79,27 @@ class _LoginViewState extends State<LoginView> {
                   controller: _passwordController,
                   validator: AuthValidators.password,
                 ),
-                const SizedBox(height: 22),
+
+                const SizedBox(height: 10),
+
+                /// 🔥 Remember Me Checkbox
+                CheckboxListTile(
+                  visualDensity: const VisualDensity(horizontal: -2, vertical: -3),
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  checkColor: Colors.black,
+                  activeColor: AppColors.primary,
+                  value: _rememberMe,
+                  onChanged: (value) {
+                    setState(() {
+                      _rememberMe = value ?? false;
+                    });
+                  },
+                  title: Text('Remember me', style: AppFonts.montserrat14Regular64748B),
+                ),
+
+                const SizedBox(height: 12),
 
                 BlocConsumer<AuthCubit, AuthState>(
                   listener: (context, state) {
@@ -79,10 +111,10 @@ class _LoginViewState extends State<LoginView> {
                         isSuccess: true,
                         onClose: () {
                           Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(builder: (_) => const HomeView()),
-                              (route) => false,
-                            );
+                            context,
+                            MaterialPageRoute(builder: (_) => const HomeView()),
+                            (route) => false,
+                          );
                         },
                       );
                     } else if (state is SignInFailure) {
@@ -102,6 +134,7 @@ class _LoginViewState extends State<LoginView> {
                 ),
 
                 const SizedBox(height: 16),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

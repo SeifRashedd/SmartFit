@@ -95,9 +95,7 @@ class UserCubit extends Cubit<UserState> {
       if (data is List) {
         for (final item in data) {
           if (item is Map) {
-            parsedClothes.add(
-              ClothesModel.fromJson(Map<String, dynamic>.from(item)),
-            );
+            parsedClothes.add(ClothesModel.fromJson(Map<String, dynamic>.from(item)));
           }
         }
       }
@@ -115,5 +113,25 @@ class UserCubit extends Cubit<UserState> {
     } catch (e) {
       emit(GetUserClothesExceptionState(errMsg: e.toString()));
     }
+  }
+
+  Future<void> logout() async {
+    await Supabase.instance.client.auth.signOut();
+
+    // Clear user-specific data but preserve onboarding status
+    await _prefs?.remove(_kGender);
+    await _prefs?.remove(_kTopSize);
+    await _prefs?.remove(_kBottomSize);
+    await _prefs?.remove('remember_me'); // Clear remember me on logout
+
+    gender = null;
+    topSize = null;
+    bottomSize = null;
+    minBudget = null;
+    maxBudget = null;
+    budgetSegment = null;
+    clothes.clear();
+    clothesAfterFillter.clear();
+    emit(UserLoggedOut());
   }
 }

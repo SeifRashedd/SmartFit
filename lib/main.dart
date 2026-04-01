@@ -14,7 +14,11 @@ Future<void> main() async {
   const supabaseAnonKey =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1ZHVnd25tenN1aXdoenFqdXpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NTc2MzYsImV4cCI6MjA4OTIzMzYzNn0.vyiwlOe4kVEzp70LLzUAtRjgN8TohSDSWSPdWRcpTYo';
 
-  await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+  await Supabase.initialize(
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
+    authOptions: const FlutterAuthClientOptions(autoRefreshToken: true),
+  );
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   final userCubit = UserCubit();
