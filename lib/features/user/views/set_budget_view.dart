@@ -4,9 +4,8 @@ import 'package:smartfit/core/constants/app_constants.dart';
 import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/core/styles/app_fonts.dart';
 import 'package:smartfit/core/widgets/custom_button.dart';
-import 'package:smartfit/features/face_dect/views/detect_face_view.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
-import 'package:smartfit/features/user/views/login_view.dart';
+import 'package:smartfit/features/auth/views/login_view.dart';
 // import 'package:smartfit/features/user/views/home_view.dart';
 
 class SetBudgetView extends StatefulWidget {
@@ -88,9 +87,7 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                 children: [
                   const Spacer(),
                   TextButton(
-                    onPressed: () => Navigator.of(
-                      context,
-                    ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginView())),
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginView())),
                     child: Text('Skip', style: AppFonts.montserrat14Regular64748B),
                   ),
                 ],
@@ -189,7 +186,7 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                     segment: segmentKey.isEmpty ? null : segmentKey,
                   );
 
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const DetectFaceView()));
+                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginView()));
                 },
               ),
               const SizedBox(height: 20),

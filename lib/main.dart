@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smartfit/features/user/views/login_view.dart';
+import 'package:smartfit/features/auth/cubit/auth_cubit.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:smartfit/features/app_settings/logic/app_settings_cubit.dart';
-import 'package:smartfit/features/app_settings/views/on_bording_view.dart';
+import 'package:smartfit/features/app_settings/views/splash_screen.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
 
 Future<void> main() async {
@@ -35,21 +35,15 @@ class SmartFitApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => AppSettingCubit()),
+        BlocProvider(create: (_) => AuthCubit()),
         BlocProvider.value(value: appUserCubit),
       ],
       child: MaterialApp(
         theme: ThemeData(scaffoldBackgroundColor: Color(0xFFF5F7FA)),
         title: 'Smart Fit',
         debugShowCheckedModeBanner: false,
-        home: userCubit == null ? const OnBoardingView() : _resolveInitialView(appUserCubit),
+        home: const SplashScreen(),
       ),
     );
-  }
-
-  Widget _resolveInitialView(UserCubit userCubit) {
-    if (!userCubit.hasSeenOnboarding) {
-      return const OnBoardingView();
-    }
-    return const LoginView();
   }
 }

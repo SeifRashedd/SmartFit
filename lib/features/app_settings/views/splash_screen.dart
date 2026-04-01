@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/features/app_settings/views/on_bording_view.dart';
+import 'package:smartfit/features/auth/views/login_view.dart';
+import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -21,7 +24,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (!mounted) return;
 
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const OnBoardingView()));
+    final hasSeenOnboarding = context.read<UserCubit>().hasSeenOnboarding;
+    final nextScreen = hasSeenOnboarding ? const LoginView() : const OnBoardingView();
+
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => nextScreen));
   }
 
   @override

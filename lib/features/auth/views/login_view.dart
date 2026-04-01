@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smartfit/core/constants/app_constants.dart';
 import 'package:smartfit/core/styles/app_fonts.dart';
 import 'package:smartfit/core/widgets/custom_button.dart';
-import 'package:smartfit/features/user/views/register_view.dart';
-import 'package:smartfit/features/user/widgets/auth_header_widget.dart';
-import 'package:smartfit/features/user/widgets/auth_text_form_field.dart';
-import 'package:smartfit/features/user/validators/auth_validators.dart';
+import 'package:smartfit/core/widgets/styled_dialog.dart';
+import 'package:smartfit/features/auth/cubit/auth_cubit.dart';
+import 'package:smartfit/features/auth/views/register_view.dart';
+import 'package:smartfit/features/auth/widgets/auth_header_widget.dart';
+import 'package:smartfit/features/auth/widgets/auth_text_form_field.dart';
+import 'package:smartfit/core/validators/auth_validators.dart';
+import 'package:smartfit/features/user/views/home_view.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -29,12 +33,14 @@ class _LoginViewState extends State<LoginView> {
   void _onLoginPressed() {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
-    // Intentionally no backend action for now.
+
+    context.read<AuthCubit>().signIn(email: _emailController.text.trim(), password: _passwordController.text.trim());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: AppConstants.appPadding,
@@ -62,12 +68,39 @@ class _LoginViewState extends State<LoginView> {
                   validator: AuthValidators.password,
                 ),
                 const SizedBox(height: 22),
-                CustomButton(
-                  onPressed: _onLoginPressed,
-                  text: 'Login',
-                  showIcon: true,
-                  icon: const Icon(Icons.login_rounded, size: 18),
+
+                BlocConsumer<AuthCubit, AuthState>(
+                  listener: (context, state) {
+                    if (state is SignInSuccess) {
+                      showStyledDialog(
+                        context,
+                        title: 'Login Successful',
+                        message: 'Welcome back to SmartFit!',
+                        isSuccess: true,
+                        onClose: () {
+                          Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(builder: (_) => const HomeView()),
+                              (route) => false,
+                            );
+                        },
+                      );
+                    } else if (state is SignInFailure) {
+                      showStyledDialog(context, title: 'Login Failed', message: state.errorMessage, isSuccess: false);
+                    }
+                  },
+                  builder: (context, state) {
+                    final isLoading = state is SignInLoading;
+
+                    return CustomButton(
+                      onPressed: isLoading ? () {} : _onLoginPressed,
+                      text: isLoading ? 'Loading...' : 'Login',
+                      showIcon: true,
+                      icon: const Icon(Icons.login_rounded, size: 18),
+                    );
+                  },
                 ),
+
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -86,7 +119,6 @@ class _LoginViewState extends State<LoginView> {
           ),
         ),
       ),
-      backgroundColor: const Color(0xFFF5F7FA),
     );
   }
 }

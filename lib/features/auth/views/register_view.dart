@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smartfit/core/constants/app_constants.dart';
 import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/core/styles/app_fonts.dart';
 import 'package:smartfit/core/widgets/custom_button.dart';
-import 'package:smartfit/features/user/views/login_view.dart';
-import 'package:smartfit/features/user/widgets/auth_header_widget.dart';
-import 'package:smartfit/features/user/widgets/auth_text_form_field.dart';
-import 'package:smartfit/features/user/validators/auth_validators.dart';
+import 'package:smartfit/core/widgets/styled_dialog.dart';
+import 'package:smartfit/features/auth/cubit/auth_cubit.dart';
+import 'package:smartfit/features/auth/views/login_view.dart';
+import 'package:smartfit/features/auth/widgets/auth_header_widget.dart';
+import 'package:smartfit/features/auth/widgets/auth_text_form_field.dart';
+import 'package:smartfit/core/validators/auth_validators.dart';
+import 'package:smartfit/features/face_dect/views/detect_face_view.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -23,7 +27,6 @@ class _RegisterViewState extends State<RegisterView> {
 
   bool _agreeFaceImage = false;
   bool _agreeBodyImage = false;
-  bool _showAgreementError = false;
 
   @override
   void dispose() {
@@ -35,14 +38,10 @@ class _RegisterViewState extends State<RegisterView> {
 
   void _onRegisterPressed() {
     final validForm = _formKey.currentState?.validate() ?? false;
-    final validAgreement = _agreeFaceImage && _agreeBodyImage;
 
-    setState(() {
-      _showAgreementError = !validAgreement;
-    });
+    if (!validForm) return;
 
-    if (!validForm || !validAgreement) return;
-    // Intentionally no backend action for now.
+    context.read<AuthCubit>().signUp(email: _emailController.text.trim(), password: _passwordController.text.trim());
   }
 
   @override
@@ -131,14 +130,7 @@ class _RegisterViewState extends State<RegisterView> {
                     style: AppFonts.montserrat14Regular64748B.copyWith(color: const Color(0xFF0F172A)),
                   ),
                 ),
-                if (_showAgreementError)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(
-                      'Please accept both image permissions to continue.',
-                      style: AppFonts.montserrat14Regular64748B.copyWith(color: const Color(0xFFE11D48)),
-                    ),
-                  ),
+
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
@@ -158,11 +150,41 @@ class _RegisterViewState extends State<RegisterView> {
                   ),
                 ),
                 const SizedBox(height: 22),
-                CustomButton(
-                  onPressed: _onRegisterPressed,
-                  text: 'Register',
-                  showIcon: true,
-                  icon: const Icon(Icons.app_registration_rounded, size: 18),
+                BlocConsumer<AuthCubit, AuthState>(
+                  listener: (context, state) {
+                    if (state is SignUpSuccess) {
+                      showStyledDialog(
+                        context,
+                        title: 'Account Created',
+                        message: 'Your account has been created successfully!',
+                        isSuccess: true,
+                        onClose: () {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (_) => const DetectFaceView()),
+                            (route) => false,
+                          );
+                        },
+                      );
+                    } else if (state is SignUpFailure) {
+                      showStyledDialog(
+                        context,
+                        title: 'Registration Failed',
+                        message: state.errorMessage,
+                        isSuccess: false,
+                      );
+                    }
+                  },
+                  builder: (context, state) {
+                    final isLoading = state is SignUpLoading;
+
+                    return CustomButton(
+                      onPressed: isLoading ? () {} : _onRegisterPressed,
+                      text: isLoading ? 'Loading...' : 'Register',
+                      showIcon: true,
+                      icon: const Icon(Icons.app_registration_rounded, size: 18),
+                    );
+                  },
                 ),
                 const SizedBox(height: 16),
                 Row(
