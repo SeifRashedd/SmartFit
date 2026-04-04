@@ -7,6 +7,7 @@ import 'package:smartfit/features/auth/cubit/auth_cubit.dart';
 import 'package:smartfit/features/auth/views/login_view.dart';
 import 'package:smartfit/features/body_dect/views/detect_body_view.dart';
 import 'package:smartfit/features/face_dect/views/detect_face_view.dart';
+import 'package:smartfit/features/user/views/cart_view.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
 import 'package:smartfit/features/user/views/item_details_view.dart';
 import 'package:smartfit/features/user/views/set_budget_view.dart';
@@ -88,6 +89,18 @@ class _HomeViewState extends State<HomeView> {
                     );
                   },
                 ),
+                ListTile(
+                  leading: const Icon(Icons.shopping_cart_outlined),
+                  title: const Text('My Cart'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const CartView(),
+                      ),
+                    );
+                  },
+                ),
                 const Spacer(),
                 ListTile(
                   leading: const Icon(Icons.logout_rounded),
@@ -116,7 +129,8 @@ class _HomeViewState extends State<HomeView> {
       body: SafeArea(
         child: BlocBuilder<UserCubit, UserState>(
           builder: (context, state) {
-            final clothes = state is GetUserClothesSuccessState ? state.clothes : null;
+            final userCubit = context.read<UserCubit>();
+            final clothes = userCubit.clothesAfterFillter;
 
             final errorMsg = switch (state) {
               GetUserClothesErrorState s => s.errMsg,
@@ -124,7 +138,7 @@ class _HomeViewState extends State<HomeView> {
               _ => null,
             };
 
-            final isLoading = state is GetUserClothesLoadingState;
+            final isLoading = state is GetUserClothesLoadingState && clothes.isEmpty;
 
             return CustomScrollView(
               slivers: [
@@ -175,7 +189,7 @@ class _HomeViewState extends State<HomeView> {
                     padding: AppConstants.appPadding.copyWith(top: 0),
                     sliver: const _HomeShimmerSliverGrid(count: 6),
                   )
-                else if (clothes == null || clothes.isEmpty)
+                else if (clothes.isEmpty)
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: AppConstants.appPadding,
@@ -197,6 +211,7 @@ class _HomeViewState extends State<HomeView> {
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (_) => ItemDetailsView(
+                                  id: item.id,
                                   brand: brand,
                                   title: item.title,
                                   description: item.description,

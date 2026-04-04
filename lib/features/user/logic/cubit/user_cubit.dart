@@ -13,6 +13,7 @@ class UserCubit extends Cubit<UserState> {
   static const _kGender = 'user_gender';
   static const _kTopSize = 'user_top_size';
   static const _kBottomSize = 'user_bottom_size';
+  static const _kCartItems = 'cart_items';
 
   SharedPreferences? _prefs;
 
@@ -25,6 +26,9 @@ class UserCubit extends Cubit<UserState> {
   String? budgetSegment;
   List<ClothesModel> clothes = [];
   List<ClothesModel> clothesAfterFillter = [];
+  List<String> cartItemIds = [];
+
+  List<ClothesModel> get cartItems => clothes.where((e) => cartItemIds.contains(e.id)).toList();
 
   Future<void> initData() async {
     _prefs = await SharedPreferences.getInstance();
@@ -33,6 +37,7 @@ class UserCubit extends Cubit<UserState> {
     gender = _prefs?.getString(_kGender);
     topSize = _prefs?.getString(_kTopSize);
     bottomSize = _prefs?.getString(_kBottomSize);
+    cartItemIds = _prefs?.getStringList(_kCartItems) ?? [];
 
     emit(UserDataInitialized());
   }
@@ -64,6 +69,17 @@ class UserCubit extends Cubit<UserState> {
     budgetSegment = segment;
     emit(UserBudgetUpdated(minBudget: minBudget!, maxBudget: maxBudget!, segment: budgetSegment));
   }
+
+  void toggleCartItem(String id) {
+    if (cartItemIds.contains(id)) {
+      cartItemIds.remove(id);
+    } else {
+      cartItemIds.add(id);
+    }
+    _prefs?.setStringList(_kCartItems, cartItemIds);
+    emit(UserCartUpdated());
+  }
+
 
   void filtterClothes() {
     final normalizedGender = (gender ?? '').toLowerCase();

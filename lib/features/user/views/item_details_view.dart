@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/core/styles/app_fonts.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
+import 'package:smartfit/features/user/views/cart_view.dart';
 
 /// Demo-only: stable "random" rating + review count per product (no DB field yet).
 ({double rating, int reviewCount}) _fakeRatingReviews(String seed) {
@@ -17,6 +18,7 @@ import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
 class ItemDetailsView extends StatelessWidget {
   const ItemDetailsView({
     super.key,
+    required this.id,
     required this.brand,
     required this.title,
     required this.description,
@@ -27,6 +29,7 @@ class ItemDetailsView extends StatelessWidget {
     required this.matchLabel,
   });
 
+  final String id;
   final String brand;
   final String title;
   final String description;
@@ -68,6 +71,45 @@ class ItemDetailsView extends StatelessWidget {
                 style: IconButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.9)),
                 icon: const Icon(Icons.arrow_back_ios_new_rounded),
                 onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            Positioned(
+              top: 16,
+              right: 16,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  IconButton(
+                    style: IconButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.9)),
+                    icon: const Icon(Icons.shopping_cart_outlined),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const CartView()),
+                    ),
+                  ),
+                  BlocBuilder<UserCubit, UserState>(
+                    builder: (context, state) {
+                      final count = context.watch<UserCubit>().cartItemIds.length;
+                      if (count == 0) return const SizedBox.shrink();
+                      
+                      return Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFDC2626),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '$count',
+                            style: AppFonts.montserrat13BoldPrimary.copyWith(color: Colors.white, fontSize: 10),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
             DraggableScrollableSheet(
@@ -217,6 +259,36 @@ class ItemDetailsView extends StatelessWidget {
                               ),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 20),
+                        BlocBuilder<UserCubit, UserState>(
+                          builder: (context, state) {
+                            final inCart = context.watch<UserCubit>().cartItemIds.contains(id);
+                            
+                            return SizedBox(
+                              width: double.infinity,
+                              height: 52,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  context.read<UserCubit>().toggleCartItem(id);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: inCart ? const Color(0xFFFEE2E2) : primary,
+                                  foregroundColor: inCart ? const Color(0xFFDC2626) : Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                ),
+                                icon: Icon(inCart ? Icons.remove_shopping_cart_rounded : Icons.add_shopping_cart_rounded),
+                                label: Text(
+                                  inCart ? 'Remove from Cart' : 'Add to Cart',
+                                  style: AppFonts.montserrat14Regular64748B.copyWith(
+                                    color: inCart ? const Color(0xFFDC2626) : Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(height: 20),
                       ],

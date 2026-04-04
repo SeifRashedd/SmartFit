@@ -27,6 +27,8 @@ final class UserBudgetUpdated extends UserState {
   final String? segment;
 }
 
+final class UserCartUpdated extends UserState {}
+
 class GetUserClothesLoadingState extends UserState {}
 
 class GetUserClothesSuccessState extends UserState {

@@ -223,7 +223,7 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                     max: _values.end,
                     segment: segmentKey.isEmpty ? null : segmentKey,
                   );
-                  
+
                   context.read<UserCubit>().getUserClothes();
 
                   if (widget.isFromDrawer) {
