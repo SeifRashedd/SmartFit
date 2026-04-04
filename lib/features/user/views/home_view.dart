@@ -9,6 +9,7 @@ import 'package:smartfit/features/body_dect/views/detect_body_view.dart';
 import 'package:smartfit/features/face_dect/views/detect_face_view.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
 import 'package:smartfit/features/user/views/item_details_view.dart';
+import 'package:smartfit/features/user/views/set_budget_view.dart';
 import 'package:smartfit/features/user/widgets/home_view_item.dart';
 
 class HomeView extends StatefulWidget {
@@ -60,7 +61,11 @@ class _HomeViewState extends State<HomeView> {
                   title: const Text('Scan Body Again'),
                   onTap: () {
                     Navigator.of(context).pop();
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const DetectBodyView()));
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        builder: (_) => const DetectBodyView(goToBudgetAfterScan: false),
+                      ),
+                    );
                   },
                 ),
                 ListTile(
@@ -69,6 +74,18 @@ class _HomeViewState extends State<HomeView> {
                   onTap: () {
                     Navigator.of(context).pop();
                     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const DetectFaceView()));
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.attach_money_rounded),
+                  title: const Text('Set Budget'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const SetBudgetView(isFromDrawer: true),
+                      ),
+                    );
                   },
                 ),
                 const Spacer(),

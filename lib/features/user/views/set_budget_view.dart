@@ -5,11 +5,12 @@ import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/core/styles/app_fonts.dart';
 import 'package:smartfit/core/widgets/custom_button.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
-import 'package:smartfit/features/auth/views/login_view.dart';
-// import 'package:smartfit/features/user/views/home_view.dart';
+import 'package:smartfit/features/user/views/home_view.dart';
 
 class SetBudgetView extends StatefulWidget {
-  const SetBudgetView({super.key});
+  const SetBudgetView({super.key, this.isFromDrawer = false});
+
+  final bool isFromDrawer;
 
   @override
   State<SetBudgetView> createState() => _SetBudgetViewState();
@@ -30,7 +31,10 @@ class _SetBudgetViewState extends State<SetBudgetView> {
     final minBudget = userCubit.minBudget ?? 50;
     final maxBudget = userCubit.maxBudget ?? 200;
 
-    _values = RangeValues(minBudget.clamp(_min, _max), maxBudget.clamp(_min, _max));
+    _values = RangeValues(
+      minBudget.clamp(_min, _max),
+      maxBudget.clamp(_min, _max),
+    );
 
     _selectedQuickIndex = switch (userCubit.budgetSegment) {
       'under_50' => 0,
@@ -87,8 +91,20 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                 children: [
                   const Spacer(),
                   TextButton(
-                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginView())),
-                    child: Text('Skip', style: AppFonts.montserrat14Regular64748B),
+                    onPressed: () {
+                      if (widget.isFromDrawer) {
+                        Navigator.of(context).pop();
+                      } else {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (_) => const HomeView()),
+                          (route) => false,
+                        );
+                      }
+                    },
+                    child: Text(
+                      'Skip',
+                      style: AppFonts.montserrat14Regular64748B,
+                    ),
                   ),
                 ],
               ),
@@ -103,19 +119,28 @@ class _SetBudgetViewState extends State<SetBudgetView> {
               const SizedBox(height: 24),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 24,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 20, offset: const Offset(0, 12)),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 20,
+                      offset: const Offset(0, 12),
+                    ),
                   ],
                 ),
                 child: Column(
                   children: [
                     Text(
                       '\$${_values.start.round()} - \$${_values.end.round()}',
-                      style: AppFonts.montserrat30BoldBlack.copyWith(fontSize: 28),
+                      style: AppFonts.montserrat30BoldBlack.copyWith(
+                        fontSize: 28,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -153,7 +178,12 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('Quick Select', style: AppFonts.montserrat14Regular64748B.copyWith(fontWeight: FontWeight.w600)),
+              Text(
+                'Quick Select',
+                style: AppFonts.montserrat14Regular64748B.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 12,
@@ -169,8 +199,16 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                     isSelected: _selectedQuickIndex == 1,
                     onTap: () => _onQuickSelect(1),
                   ),
-                  _BudgetChip(label: 'Premium', isSelected: _selectedQuickIndex == 2, onTap: () => _onQuickSelect(2)),
-                  _BudgetChip(label: 'Luxury', isSelected: _selectedQuickIndex == 3, onTap: () => _onQuickSelect(3)),
+                  _BudgetChip(
+                    label: 'Premium',
+                    isSelected: _selectedQuickIndex == 2,
+                    onTap: () => _onQuickSelect(2),
+                  ),
+                  _BudgetChip(
+                    label: 'Luxury',
+                    isSelected: _selectedQuickIndex == 3,
+                    onTap: () => _onQuickSelect(3),
+                  ),
                 ],
               ),
               const Spacer(),
@@ -185,8 +223,17 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                     max: _values.end,
                     segment: segmentKey.isEmpty ? null : segmentKey,
                   );
+                  
+                  context.read<UserCubit>().getUserClothes();
 
-                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginView()));
+                  if (widget.isFromDrawer) {
+                    Navigator.of(context).pop();
+                  } else {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => const HomeView()),
+                      (route) => false,
+                    );
+                  }
                 },
               ),
               const SizedBox(height: 20),
@@ -200,7 +247,11 @@ class _SetBudgetViewState extends State<SetBudgetView> {
 }
 
 class _BudgetChip extends StatelessWidget {
-  const _BudgetChip({required this.label, required this.isSelected, required this.onTap});
+  const _BudgetChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   final String label;
   final bool isSelected;
@@ -208,7 +259,9 @@ class _BudgetChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = isSelected ? AppColors.primary : const Color(0xFF94A3B8).withValues(alpha: 0.3);
+    final borderColor = isSelected
+        ? AppColors.primary
+        : const Color(0xFF94A3B8).withValues(alpha: 0.3);
     final textStyle = isSelected
         ? AppFonts.montserrat13BoldPrimary.copyWith(color: AppColors.primary)
         : AppFonts.montserrat14Regular64748B;
@@ -218,7 +271,9 @@ class _BudgetChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : Colors.white,
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.08)
+              : Colors.white,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(color: borderColor, width: 1.3),
         ),

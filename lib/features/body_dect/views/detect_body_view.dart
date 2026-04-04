@@ -11,9 +11,12 @@ import 'package:smartfit/features/body_dect/views/body_detect_guided_camera_view
 import 'package:smartfit/features/body_dect/widget/info_card_body_detect.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
 import 'package:smartfit/features/user/views/home_view.dart';
+import 'package:smartfit/features/user/views/set_budget_view.dart';
 
 class DetectBodyView extends StatefulWidget {
-  const DetectBodyView({super.key});
+  const DetectBodyView({super.key, this.goToBudgetAfterScan = true});
+
+  final bool goToBudgetAfterScan;
 
   @override
   State<DetectBodyView> createState() => _DetectBodyViewState();
@@ -127,11 +130,19 @@ class _DetectBodyViewState extends State<DetectBodyView> {
                 child: CustomButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (_) => const HomeView(),
-                      ),
-                    );
+                    if (widget.goToBudgetAfterScan) {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (_) => const SetBudgetView(isFromDrawer: false),
+                        ),
+                      );
+                    } else {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (_) => const HomeView(),
+                        ),
+                      );
+                    }
                   },
                   text: 'Next',
                   backgroundColor: color,
