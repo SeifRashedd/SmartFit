@@ -1,3 +1,4 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smartfit/core/constants/app_constants.dart';
@@ -227,7 +228,7 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 style: AppFonts.montserrat14Regular64748B.copyWith(color: const Color(0xFF0F172A)),
                 decoration: InputDecoration(
-                  hintText: '\$ 1500',
+                  hintText: '1500',
                   hintStyle: AppFonts.montserrat14Regular64748B,
                   prefixText: '\$ ',
                   prefixStyle: AppFonts.montserrat14Regular64748B.copyWith(
@@ -257,9 +258,12 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                   final totalCap = double.tryParse(raw);
                   if (totalCap == null || totalCap <= 0) {
                     if (!context.mounted) return;
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(const SnackBar(content: Text('Enter a valid total cart budget.')));
+                    Flushbar(
+                      message: 'Enter a valid total cart budget.',
+                      flushbarPosition: FlushbarPosition.TOP,
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 3),
+                    ).show(context);
                     return;
                   }
 
@@ -267,13 +271,13 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                   final cubit = context.read<UserCubit>();
                   if (totalCap + 1e-6 < cubit.cartSubtotal) {
                     if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
+                    Flushbar(
+                      message:
                           'Your cart is \$${cubit.cartSubtotal.toStringAsFixed(2)}. Enter a limit that covers it, or remove items first.',
-                        ),
-                      ),
-                    );
+                      flushbarPosition: FlushbarPosition.TOP,
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 3),
+                    ).show(context);
                     return;
                   }
 

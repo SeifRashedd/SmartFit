@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smartfit/core/styles/app_colors.dart';
@@ -82,24 +83,19 @@ class ItemDetailsView extends StatelessWidget {
                   IconButton(
                     style: IconButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.9)),
                     icon: const Icon(Icons.shopping_cart_outlined),
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const CartView()),
-                    ),
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CartView())),
                   ),
                   BlocBuilder<UserCubit, UserState>(
                     builder: (context, state) {
                       final count = context.watch<UserCubit>().cartItemIds.length;
                       if (count == 0) return const SizedBox.shrink();
-                      
+
                       return Positioned(
                         right: 0,
                         top: 0,
                         child: Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFDC2626),
-                            shape: BoxShape.circle,
-                          ),
+                          decoration: const BoxDecoration(color: Color(0xFFDC2626), shape: BoxShape.circle),
                           child: Text(
                             '$count',
                             style: AppFonts.montserrat13BoldPrimary.copyWith(color: Colors.white, fontSize: 10),
@@ -298,7 +294,7 @@ class ItemDetailsView extends StatelessWidget {
                         BlocBuilder<UserCubit, UserState>(
                           builder: (context, state) {
                             final inCart = context.watch<UserCubit>().cartItemIds.contains(id);
-                            
+
                             return SizedBox(
                               width: double.infinity,
                               height: 52,
@@ -307,12 +303,12 @@ class ItemDetailsView extends StatelessWidget {
                                   final cubit = context.read<UserCubit>();
                                   final ok = cubit.toggleCartItem(id);
                                   if (!ok && context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        behavior: SnackBarBehavior.floating,
-                                        content: Text('You have hit your total cart budget limit.'),
-                                      ),
-                                    );
+                                    Flushbar(
+                                      message: 'You have hit your total cart budget limit.',
+                                      flushbarPosition: FlushbarPosition.TOP,
+                                      backgroundColor: Colors.red,
+                                      duration: const Duration(seconds: 3),
+                                    ).show(context);
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(
@@ -321,7 +317,9 @@ class ItemDetailsView extends StatelessWidget {
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                 ),
-                                icon: Icon(inCart ? Icons.remove_shopping_cart_rounded : Icons.add_shopping_cart_rounded),
+                                icon: Icon(
+                                  inCart ? Icons.remove_shopping_cart_rounded : Icons.add_shopping_cart_rounded,
+                                ),
                                 label: Text(
                                   inCart ? 'Remove from Cart' : 'Add to Cart',
                                   style: AppFonts.montserrat14Regular64748B.copyWith(
