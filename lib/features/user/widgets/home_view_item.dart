@@ -118,12 +118,6 @@ class HomeViewItem extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    Text(
-                      sizeLabel,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppFonts.montserrat14Regular64748B.copyWith(fontSize: 11),
-                    ),
                   ],
                 ),
               ],

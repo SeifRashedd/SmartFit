@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smartfit/core/constants/app_constants.dart';
+import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/core/styles/app_fonts.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
 import 'package:smartfit/features/user/views/item_details_view.dart';
@@ -25,7 +26,8 @@ class CartView extends StatelessWidget {
       body: SafeArea(
         child: BlocBuilder<UserCubit, UserState>(
           builder: (context, state) {
-            final cartItems = context.watch<UserCubit>().cartItems;
+            final cubit = context.watch<UserCubit>();
+            final cartItems = cubit.cartItems;
 
             if (cartItems.isEmpty) {
               return Center(
@@ -42,6 +44,8 @@ class CartView extends StatelessWidget {
 
             final cartTotal = cartItems.fold<double>(0, (sum, e) => sum + e.price);
             final totalLabel = '\$${cartTotal.toStringAsFixed(2)}';
+            final cap = cubit.totalCartBudget;
+            final capLabel = (cap != null && cap > 0) ? '\$${cap.toStringAsFixed(2)}' : null;
 
             return CustomScrollView(
               slivers: [
@@ -138,20 +142,36 @@ class CartView extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Total (${cartItems.length} ${cartItems.length == 1 ? 'item' : 'items'})',
-                            style: AppFonts.montserrat14Regular64748B.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF0F172A),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Total (${cartItems.length} ${cartItems.length == 1 ? 'item' : 'items'})',
+                                style: AppFonts.montserrat14Regular64748B.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF0F172A),
+                                ),
+                              ),
+                              Text(
+                                totalLabel,
+                                style: AppFonts.montserrat20BoldBlack,
+                              ),
+                            ],
+                          ),
+                          if (capLabel != null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              'Your cart budget limit: $capLabel',
+                              style: AppFonts.montserrat14Regular64748B.copyWith(
+                                fontSize: 12,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                          Text(
-                            totalLabel,
-                            style: AppFonts.montserrat20BoldBlack,
-                          ),
+                          ],
                         ],
                       ),
                     ),

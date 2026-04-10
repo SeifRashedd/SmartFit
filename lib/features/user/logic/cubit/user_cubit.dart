@@ -16,6 +16,7 @@ class UserCubit extends Cubit<UserState> {
   static const _kMinBudget = 'user_min_budget';
   static const _kMaxBudget = 'user_max_budget';
   static const _kBudgetSegment = 'user_budget_segment';
+  static const _kTotalCartBudget = 'user_total_cart_budget';
   static const _kCartItems = 'cart_items';
 
   static const double budgetMinUsd = 200;
@@ -30,6 +31,8 @@ class UserCubit extends Cubit<UserState> {
   double? minBudget;
   double? maxBudget;
   String? budgetSegment;
+  /// Max total price for all items in the cart combined (set on budget screen).
+  double? totalCartBudget;
   List<ClothesModel> clothes = [];
   List<ClothesModel> clothesAfterFillter = [];
   List<String> cartItemIds = [];
@@ -48,6 +51,7 @@ class UserCubit extends Cubit<UserState> {
     minBudget = _prefs?.getDouble(_kMinBudget);
     maxBudget = _prefs?.getDouble(_kMaxBudget);
     budgetSegment = _prefs?.getString(_kBudgetSegment);
+    totalCartBudget = _prefs?.getDouble(_kTotalCartBudget);
     _clampBudgetToAllowedRange();
 
     emit(UserDataInitialized());
@@ -87,7 +91,12 @@ class UserCubit extends Cubit<UserState> {
     maxBudget = hi;
   }
 
-  Future<void> setBudget({required double min, required double max, String? segment}) async {
+  Future<void> setBudget({
+    required double min,
+    required double max,
+    String? segment,
+    required double totalCartBudgetMax,
+  }) async {
     var lo = min.clamp(budgetMinUsd, budgetMaxUsd);
     var hi = max.clamp(budgetMinUsd, budgetMaxUsd);
     if (lo > hi) {
@@ -98,6 +107,7 @@ class UserCubit extends Cubit<UserState> {
     minBudget = lo;
     maxBudget = hi;
     budgetSegment = segment;
+    totalCartBudget = totalCartBudgetMax;
     await _prefs?.setDouble(_kMinBudget, lo);
     await _prefs?.setDouble(_kMaxBudget, hi);
     if (segment != null && segment.isNotEmpty) {
@@ -105,18 +115,49 @@ class UserCubit extends Cubit<UserState> {
     } else {
       await _prefs?.remove(_kBudgetSegment);
     }
+    await _prefs?.setDouble(_kTotalCartBudget, totalCartBudgetMax);
     filtterClothes();
-    emit(UserBudgetUpdated(minBudget: minBudget!, maxBudget: maxBudget!, segment: budgetSegment));
+    emit(
+      UserBudgetUpdated(
+        minBudget: minBudget!,
+        maxBudget: maxBudget!,
+        segment: budgetSegment,
+        totalCartBudget: totalCartBudget,
+      ),
+    );
   }
 
-  void toggleCartItem(String id) {
+  double get cartSubtotal => cartItems.fold<double>(0, (sum, e) => sum + e.price);
+
+  ClothesModel? _clothesById(String id) {
+    for (final e in clothes) {
+      if (e.id == id) return e;
+    }
+    return null;
+  }
+
+  /// Returns `false` if adding would exceed [totalCartBudget]. Removing always succeeds.
+  bool toggleCartItem(String id) {
     if (cartItemIds.contains(id)) {
       cartItemIds.remove(id);
-    } else {
-      cartItemIds.add(id);
+      _prefs?.setStringList(_kCartItems, cartItemIds);
+      emit(UserCartUpdated());
+      return true;
     }
+
+    final cap = totalCartBudget;
+    if (cap != null && cap > 0) {
+      final item = _clothesById(id);
+      final price = item?.price ?? 0;
+      if (cartSubtotal + price > cap + 0.009) {
+        return false;
+      }
+    }
+
+    cartItemIds.add(id);
     _prefs?.setStringList(_kCartItems, cartItemIds);
     emit(UserCartUpdated());
+    return true;
   }
 
 
@@ -188,6 +229,7 @@ class UserCubit extends Cubit<UserState> {
     await _prefs?.remove(_kMinBudget);
     await _prefs?.remove(_kMaxBudget);
     await _prefs?.remove(_kBudgetSegment);
+    await _prefs?.remove(_kTotalCartBudget);
     await _prefs?.remove('remember_me'); // Clear remember me on logout
 
     gender = null;
@@ -196,6 +238,7 @@ class UserCubit extends Cubit<UserState> {
     minBudget = null;
     maxBudget = null;
     budgetSegment = null;
+    totalCartBudget = null;
     clothes.clear();
     clothesAfterFillter.clear();
     emit(UserLoggedOut());

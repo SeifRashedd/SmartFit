@@ -260,7 +260,41 @@ class ItemDetailsView extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 12),
+                        BlocBuilder<UserCubit, UserState>(
+                          builder: (context, state) {
+                            final cubit = context.watch<UserCubit>();
+                            final cap = cubit.totalCartBudget;
+                            if (cap == null || cap <= 0) return const SizedBox.shrink();
+                            final sub = cubit.cartSubtotal;
+                            final remaining = (cap - sub).clamp(0.0, cap);
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF8FAFC),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(Icons.account_balance_wallet_outlined, size: 20, color: primary),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        'Cart \$${sub.toStringAsFixed(2)} / \$${cap.toStringAsFixed(2)}  ·  \$${remaining.toStringAsFixed(2)} left',
+                                        style: AppFonts.montserrat14Regular64748B.copyWith(fontSize: 12),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                         BlocBuilder<UserCubit, UserState>(
                           builder: (context, state) {
                             final inCart = context.watch<UserCubit>().cartItemIds.contains(id);
@@ -270,7 +304,16 @@ class ItemDetailsView extends StatelessWidget {
                               height: 52,
                               child: ElevatedButton.icon(
                                 onPressed: () {
-                                  context.read<UserCubit>().toggleCartItem(id);
+                                  final cubit = context.read<UserCubit>();
+                                  final ok = cubit.toggleCartItem(id);
+                                  if (!ok && context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        behavior: SnackBarBehavior.floating,
+                                        content: Text('You have hit your total cart budget limit.'),
+                                      ),
+                                    );
+                                  }
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: inCart ? const Color(0xFFFEE2E2) : primary,

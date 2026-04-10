@@ -22,6 +22,7 @@ class _SetBudgetViewState extends State<SetBudgetView> {
 
   late RangeValues _values;
   int? _selectedQuickIndex;
+  late final TextEditingController _totalCartBudgetController;
 
   @override
   void initState() {
@@ -31,10 +32,7 @@ class _SetBudgetViewState extends State<SetBudgetView> {
     final minBudget = userCubit.minBudget ?? 300;
     final maxBudget = userCubit.maxBudget ?? 500;
 
-    _values = RangeValues(
-      minBudget.clamp(_min, _max),
-      maxBudget.clamp(_min, _max),
-    );
+    _values = RangeValues(minBudget.clamp(_min, _max), maxBudget.clamp(_min, _max));
 
     _selectedQuickIndex = switch (userCubit.budgetSegment) {
       'range_200_300' => 0,
@@ -43,6 +41,19 @@ class _SetBudgetViewState extends State<SetBudgetView> {
       'range_200_500' => 3,
       _ => null,
     };
+
+    final existingCap = userCubit.totalCartBudget;
+    _totalCartBudgetController = TextEditingController(
+      text: (existingCap != null && existingCap > 0)
+          ? existingCap.toStringAsFixed(existingCap == existingCap.roundToDouble() ? 0 : 2)
+          : '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _totalCartBudgetController.dispose();
+    super.dispose();
   }
 
   void _onQuickSelect(int index) {
@@ -82,7 +93,7 @@ class _SetBudgetViewState extends State<SetBudgetView> {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: AppConstants.appPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -95,16 +106,12 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                       if (widget.isFromDrawer) {
                         Navigator.of(context).pop();
                       } else {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (_) => const HomeView()),
-                          (route) => false,
-                        );
+                        Navigator.of(
+                          context,
+                        ).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const HomeView()), (route) => false);
                       }
                     },
-                    child: Text(
-                      'Skip',
-                      style: AppFonts.montserrat14Regular64748B,
-                    ),
+                    child: Text('Skip', style: AppFonts.montserrat14Regular64748B),
                   ),
                 ],
               ),
@@ -119,28 +126,19 @@ class _SetBudgetViewState extends State<SetBudgetView> {
               const SizedBox(height: 24),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 20,
-                  horizontal: 24,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 20,
-                      offset: const Offset(0, 12),
-                    ),
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 20, offset: const Offset(0, 12)),
                   ],
                 ),
                 child: Column(
                   children: [
                     Text(
                       '\$${_values.start.round()} - \$${_values.end.round()}',
-                      style: AppFonts.montserrat30BoldBlack.copyWith(
-                        fontSize: 28,
-                      ),
+                      style: AppFonts.montserrat30BoldBlack.copyWith(fontSize: 28),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -178,12 +176,7 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text(
-                'Quick Select',
-                style: AppFonts.montserrat14Regular64748B.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text('Quick Select', style: AppFonts.montserrat14Regular64748B.copyWith(fontWeight: FontWeight.w600)),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 12,
@@ -211,18 +204,84 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                   ),
                 ],
               ),
-              const Spacer(),
+              const SizedBox(height: 28),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Total budget for your whole cart',
+                  style: AppFonts.montserrat14Regular64748B.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'We will warn you when adding items would go over this total (sum of all items in your cart).',
+                style: AppFonts.montserrat14Regular64748B.copyWith(fontSize: 12),
+                textAlign: TextAlign.left,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _totalCartBudgetController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                style: AppFonts.montserrat14Regular64748B.copyWith(color: const Color(0xFF0F172A)),
+                decoration: InputDecoration(
+                  hintText: '\$ 1500',
+                  hintStyle: AppFonts.montserrat14Regular64748B,
+                  prefixText: '\$ ',
+                  prefixStyle: AppFonts.montserrat14Regular64748B.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF0F172A),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: primary.withValues(alpha: 0.18)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: AppColors.primary, width: 1.2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 28),
               CustomButton(
                 text: 'Find My Style',
                 showIcon: true,
                 icon: const Icon(Icons.arrow_forward_rounded, size: 18),
                 onPressed: () async {
+                  final raw = _totalCartBudgetController.text.trim().replaceAll(RegExp(r'[\$,]'), '');
+                  final totalCap = double.tryParse(raw);
+                  if (totalCap == null || totalCap <= 0) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('Enter a valid total cart budget.')));
+                    return;
+                  }
+
                   final segmentKey = _segmentKeyForIndex(_selectedQuickIndex);
                   final cubit = context.read<UserCubit>();
+                  if (totalCap + 1e-6 < cubit.cartSubtotal) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Your cart is \$${cubit.cartSubtotal.toStringAsFixed(2)}. Enter a limit that covers it, or remove items first.',
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+
                   await cubit.setBudget(
                     min: _values.start,
                     max: _values.end,
                     segment: segmentKey.isEmpty ? null : segmentKey,
+                    totalCartBudgetMax: totalCap,
                   );
                   await cubit.getUserClothes();
 
@@ -230,10 +289,9 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                   if (widget.isFromDrawer) {
                     Navigator.of(context).pop();
                   } else {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const HomeView()),
-                      (route) => false,
-                    );
+                    Navigator.of(
+                      context,
+                    ).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const HomeView()), (route) => false);
                   }
                 },
               ),
@@ -248,11 +306,7 @@ class _SetBudgetViewState extends State<SetBudgetView> {
 }
 
 class _BudgetChip extends StatelessWidget {
-  const _BudgetChip({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
+  const _BudgetChip({required this.label, required this.isSelected, required this.onTap});
 
   final String label;
   final bool isSelected;
@@ -260,9 +314,7 @@ class _BudgetChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = isSelected
-        ? AppColors.primary
-        : const Color(0xFF94A3B8).withValues(alpha: 0.3);
+    final borderColor = isSelected ? AppColors.primary : const Color(0xFF94A3B8).withValues(alpha: 0.3);
     final textStyle = isSelected
         ? AppFonts.montserrat13BoldPrimary.copyWith(color: AppColors.primary)
         : AppFonts.montserrat14Regular64748B;
@@ -272,9 +324,7 @@ class _BudgetChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.08)
-              : Colors.white,
+          color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : Colors.white,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(color: borderColor, width: 1.3),
         ),

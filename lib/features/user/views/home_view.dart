@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smartfit/core/constants/app_constants.dart';
+import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/core/styles/app_fonts.dart';
 import 'package:smartfit/core/widgets/styled_dialog.dart';
 import 'package:smartfit/features/auth/cubit/auth_cubit.dart';
@@ -168,6 +169,30 @@ class _HomeViewState extends State<HomeView> {
                           textAlign: TextAlign.start,
                           style: AppFonts.montserrat14Regular64748B,
                         ),
+                        if (userCubit.totalCartBudget != null && userCubit.totalCartBudget! > 0) ...[
+                          const SizedBox(height: 14),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.account_balance_wallet_outlined, size: 22, color: AppColors.primary),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    'Cart \$${userCubit.cartSubtotal.toStringAsFixed(2)} / \$${userCubit.totalCartBudget!.toStringAsFixed(2)} ·  \$${(userCubit.totalCartBudget! - userCubit.cartSubtotal).clamp(0.0, userCubit.totalCartBudget!).toStringAsFixed(2)} left',
+                                    style: AppFonts.montserrat14Regular64748B.copyWith(fontSize: 12, color: const Color(0xFF0F172A)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 20),
                       ],
                     ),

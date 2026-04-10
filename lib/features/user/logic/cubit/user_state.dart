@@ -20,11 +20,12 @@ final class UserBodyUpdated extends UserState {
 }
 
 final class UserBudgetUpdated extends UserState {
-  UserBudgetUpdated({required this.minBudget, required this.maxBudget, this.segment});
+  UserBudgetUpdated({required this.minBudget, required this.maxBudget, this.segment, this.totalCartBudget});
 
   final double minBudget;
   final double maxBudget;
   final String? segment;
+  final double? totalCartBudget;
 }
 
 final class UserCartUpdated extends UserState {}
