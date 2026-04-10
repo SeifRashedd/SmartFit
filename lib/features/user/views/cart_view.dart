@@ -40,6 +40,9 @@ class CartView extends StatelessWidget {
               );
             }
 
+            final cartTotal = cartItems.fold<double>(0, (sum, e) => sum + e.price);
+            final totalLabel = '\$${cartTotal.toStringAsFixed(2)}';
+
             return CustomScrollView(
               slivers: [
                 SliverPadding(
@@ -61,6 +64,7 @@ class CartView extends StatelessWidget {
                                 title: item.title,
                                 description: item.description,
                                 imageUrl: item.image,
+                                priceLabel: item.formattedPrice,
                                 isUpper: item.isUpper,
                                 sizeLabel: item.size,
                                 matchLabel: staticMatchLabel,
@@ -75,6 +79,7 @@ class CartView extends StatelessWidget {
                               brand: brand,
                               title: item.title,
                               description: item.description,
+                              priceLabel: item.formattedPrice,
                               imageUrl: item.image,
                               sizeLabel: item.size,
                               matchLabel: staticMatchLabel,
@@ -116,6 +121,43 @@ class CartView extends StatelessWidget {
                     ),
                   ),
                 ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: AppConstants.appPadding.copyWith(top: 8),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.06),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Total (${cartItems.length} ${cartItems.length == 1 ? 'item' : 'items'})',
+                            style: AppFonts.montserrat14Regular64748B.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                          Text(
+                            totalLabel,
+                            style: AppFonts.montserrat20BoldBlack,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 24)),
               ],
             );
           },

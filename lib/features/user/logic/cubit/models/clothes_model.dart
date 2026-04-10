@@ -7,6 +7,7 @@ class ClothesModel {
     required this.isMale,
     required this.isUpper,
     required this.size,
+    required this.price,
   });
 
   factory ClothesModel.fromJson(Map<String, dynamic> json) {
@@ -18,8 +19,19 @@ class ClothesModel {
       isMale: (json['is_male'] ?? false) as bool,
       isUpper: (json['is_upper'] ?? false) as bool,
       size: (json['size'] ?? '') as String,
+      price: _parsePrice(json['price']),
     );
   }
+
+  static double _parsePrice(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  /// Matches budget UI (`set_budget_view`) — dollar amounts.
+  String get formattedPrice => '\$${price.toStringAsFixed(2)}';
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
@@ -30,6 +42,7 @@ class ClothesModel {
       'is_male': isMale,
       'is_upper': isUpper,
       'size': size,
+      'price': price,
     };
   }
 
@@ -40,4 +53,5 @@ class ClothesModel {
   final bool isMale;
   final bool isUpper;
   final String size;
+  final double price;
 }

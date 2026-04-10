@@ -23,7 +23,7 @@ class ItemDetailsView extends StatelessWidget {
     required this.title,
     required this.description,
     required this.imageUrl,
-    // required this.price,
+    required this.priceLabel,
     required this.isUpper,
     required this.sizeLabel,
     required this.matchLabel,
@@ -34,7 +34,7 @@ class ItemDetailsView extends StatelessWidget {
   final String title;
   final String description;
   final String imageUrl;
-  // final String price;
+  final String priceLabel;
 
   /// `true` = top / upper body item → use [UserCubit.topSize]; else [UserCubit.bottomSize].
   final bool isUpper;
@@ -183,7 +183,7 @@ class ItemDetailsView extends StatelessWidget {
                                   ],
                                 ),
                                 const SizedBox(height: 8),
-                                // Text(price, style: AppFonts.montserrat20BoldBlack),
+                                Text(priceLabel, style: AppFonts.montserrat20BoldBlack),
                               ],
                             ),
                           ],

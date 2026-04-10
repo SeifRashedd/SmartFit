@@ -10,7 +10,6 @@ import 'package:smartfit/features/auth/cubit/auth_cubit.dart';
 import 'package:smartfit/features/auth/views/register_view.dart';
 import 'package:smartfit/features/auth/widgets/auth_header_widget.dart';
 import 'package:smartfit/features/auth/widgets/auth_text_form_field.dart';
-import 'package:smartfit/core/validators/auth_validators.dart';
 import 'package:smartfit/features/user/views/home_view.dart';
 
 class LoginView extends StatefulWidget {
@@ -21,7 +20,6 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
@@ -35,9 +33,6 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void _onLoginPressed() async {
-    final isValid = _formKey.currentState?.validate() ?? false;
-    if (!isValid) return;
-
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('remember_me', _rememberMe);
 
@@ -51,9 +46,7 @@ class _LoginViewState extends State<LoginView> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: AppConstants.appPadding,
-          child: Form(
-            key: _formKey,
-            child: Column(
+          child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 40),
@@ -67,7 +60,6 @@ class _LoginViewState extends State<LoginView> {
                   keyboardType: TextInputType.emailAddress,
                   prefix: const Icon(Icons.email_outlined),
                   controller: _emailController,
-                  validator: AuthValidators.email,
                 ),
 
                 const SizedBox(height: 14),
@@ -77,7 +69,6 @@ class _LoginViewState extends State<LoginView> {
                   obscureText: true,
                   prefix: const Icon(Icons.lock_outline_rounded),
                   controller: _passwordController,
-                  validator: AuthValidators.password,
                 ),
 
                 const SizedBox(height: 10),
@@ -149,7 +140,6 @@ class _LoginViewState extends State<LoginView> {
                 ),
               ],
             ),
-          ),
         ),
       ),
     );

@@ -8,7 +8,7 @@ class HomeViewItem extends StatelessWidget {
     required this.brand,
     required this.title,
     required this.description,
-    // required this.price,
+    required this.priceLabel,
     required this.imageUrl,
     required this.sizeLabel,
     required this.matchLabel,
@@ -18,7 +18,7 @@ class HomeViewItem extends StatelessWidget {
   final String brand;
   final String title;
   final String description;
-  // final String price;
+  final String priceLabel;
   final String imageUrl;
   final String sizeLabel;
   final String matchLabel;
@@ -105,7 +105,27 @@ class HomeViewItem extends StatelessWidget {
                     fontWeight: FontWeight.w400,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      priceLabel,
+                      style: AppFonts.montserrat14Regular64748B.copyWith(
+                        fontSize: 14,
+                        color: const Color(0xFF0F172A),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      sizeLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppFonts.montserrat14Regular64748B.copyWith(fontSize: 11),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
