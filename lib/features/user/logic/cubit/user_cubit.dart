@@ -13,7 +13,13 @@ class UserCubit extends Cubit<UserState> {
   static const _kGender = 'user_gender';
   static const _kTopSize = 'user_top_size';
   static const _kBottomSize = 'user_bottom_size';
+  static const _kMinBudget = 'user_min_budget';
+  static const _kMaxBudget = 'user_max_budget';
+  static const _kBudgetSegment = 'user_budget_segment';
   static const _kCartItems = 'cart_items';
+
+  static const double budgetMinUsd = 200;
+  static const double budgetMaxUsd = 500;
 
   SharedPreferences? _prefs;
 
@@ -39,6 +45,11 @@ class UserCubit extends Cubit<UserState> {
     bottomSize = _prefs?.getString(_kBottomSize);
     cartItemIds = _prefs?.getStringList(_kCartItems) ?? [];
 
+    minBudget = _prefs?.getDouble(_kMinBudget);
+    maxBudget = _prefs?.getDouble(_kMaxBudget);
+    budgetSegment = _prefs?.getString(_kBudgetSegment);
+    _clampBudgetToAllowedRange();
+
     emit(UserDataInitialized());
   }
 
@@ -63,10 +74,38 @@ class UserCubit extends Cubit<UserState> {
     emit(UserBodyUpdated(topSize: top, bottomSize: bottom));
   }
 
-  void setBudget({required double min, required double max, String? segment}) {
-    minBudget = min;
-    maxBudget = max;
+  void _clampBudgetToAllowedRange() {
+    if (minBudget == null && maxBudget == null) return;
+    var lo = (minBudget ?? budgetMinUsd).clamp(budgetMinUsd, budgetMaxUsd);
+    var hi = (maxBudget ?? budgetMaxUsd).clamp(budgetMinUsd, budgetMaxUsd);
+    if (lo > hi) {
+      final t = lo;
+      lo = hi;
+      hi = t;
+    }
+    minBudget = lo;
+    maxBudget = hi;
+  }
+
+  Future<void> setBudget({required double min, required double max, String? segment}) async {
+    var lo = min.clamp(budgetMinUsd, budgetMaxUsd);
+    var hi = max.clamp(budgetMinUsd, budgetMaxUsd);
+    if (lo > hi) {
+      final t = lo;
+      lo = hi;
+      hi = t;
+    }
+    minBudget = lo;
+    maxBudget = hi;
     budgetSegment = segment;
+    await _prefs?.setDouble(_kMinBudget, lo);
+    await _prefs?.setDouble(_kMaxBudget, hi);
+    if (segment != null && segment.isNotEmpty) {
+      await _prefs?.setString(_kBudgetSegment, segment);
+    } else {
+      await _prefs?.remove(_kBudgetSegment);
+    }
+    filtterClothes();
     emit(UserBudgetUpdated(minBudget: minBudget!, maxBudget: maxBudget!, segment: budgetSegment));
   }
 
@@ -82,16 +121,24 @@ class UserCubit extends Cubit<UserState> {
 
 
   void filtterClothes() {
+    Iterable<ClothesModel> list = clothes;
+
     final normalizedGender = (gender ?? '').toLowerCase();
     if (normalizedGender == 'male') {
-      clothesAfterFillter = clothes.where((item) => item.isMale).toList();
-      return;
+      list = list.where((item) => item.isMale);
+    } else if (normalizedGender == 'female') {
+      list = list.where((item) => !item.isMale);
     }
-    if (normalizedGender == 'female') {
-      clothesAfterFillter = clothes.where((item) => !item.isMale).toList();
-      return;
+
+    final minB = minBudget;
+    final maxB = maxBudget;
+    if (minB != null && maxB != null) {
+      var lo = minB <= maxB ? minB : maxB;
+      var hi = minB <= maxB ? maxB : minB;
+      list = list.where((item) => item.price >= lo && item.price <= hi);
     }
-    clothesAfterFillter = List<ClothesModel>.from(clothes);
+
+    clothesAfterFillter = list.toList();
   }
 
   Future<void> getUserClothes() async {
@@ -138,6 +185,9 @@ class UserCubit extends Cubit<UserState> {
     await _prefs?.remove(_kGender);
     await _prefs?.remove(_kTopSize);
     await _prefs?.remove(_kBottomSize);
+    await _prefs?.remove(_kMinBudget);
+    await _prefs?.remove(_kMaxBudget);
+    await _prefs?.remove(_kBudgetSegment);
     await _prefs?.remove('remember_me'); // Clear remember me on logout
 
     gender = null;

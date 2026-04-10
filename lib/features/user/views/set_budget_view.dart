@@ -17,8 +17,8 @@ class SetBudgetView extends StatefulWidget {
 }
 
 class _SetBudgetViewState extends State<SetBudgetView> {
-  static const double _min = 0;
-  static const double _max = 500;
+  static const double _min = UserCubit.budgetMinUsd;
+  static const double _max = UserCubit.budgetMaxUsd;
 
   late RangeValues _values;
   int? _selectedQuickIndex;
@@ -28,8 +28,8 @@ class _SetBudgetViewState extends State<SetBudgetView> {
     super.initState();
     final userCubit = context.read<UserCubit>();
 
-    final minBudget = userCubit.minBudget ?? 50;
-    final maxBudget = userCubit.maxBudget ?? 200;
+    final minBudget = userCubit.minBudget ?? 300;
+    final maxBudget = userCubit.maxBudget ?? 500;
 
     _values = RangeValues(
       minBudget.clamp(_min, _max),
@@ -37,10 +37,10 @@ class _SetBudgetViewState extends State<SetBudgetView> {
     );
 
     _selectedQuickIndex = switch (userCubit.budgetSegment) {
-      'under_50' => 0,
-      'mid_50_200' => 1,
-      'premium' => 2,
-      'luxury' => 3,
+      'range_200_300' => 0,
+      'range_300_400' => 1,
+      'range_400_500' => 2,
+      'range_200_500' => 3,
       _ => null,
     };
   }
@@ -51,16 +51,16 @@ class _SetBudgetViewState extends State<SetBudgetView> {
 
       switch (index) {
         case 0:
-          _values = const RangeValues(0, 50);
+          _values = const RangeValues(200, 300);
           break;
         case 1:
-          _values = const RangeValues(50, 200);
+          _values = const RangeValues(300, 400);
           break;
         case 2:
-          _values = const RangeValues(200, 350);
+          _values = const RangeValues(400, 500);
           break;
         case 3:
-          _values = const RangeValues(350, 500);
+          _values = const RangeValues(200, 500);
           break;
       }
     });
@@ -68,10 +68,10 @@ class _SetBudgetViewState extends State<SetBudgetView> {
 
   String _segmentKeyForIndex(int? index) {
     return switch (index) {
-      0 => 'under_50',
-      1 => 'mid_50_200',
-      2 => 'premium',
-      3 => 'luxury',
+      0 => 'range_200_300',
+      1 => 'range_300_400',
+      2 => 'range_400_500',
+      3 => 'range_200_500',
       _ => '',
     };
   }
@@ -172,8 +172,8 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('\$0', style: AppFonts.montserrat13BoldPrimary),
-                    Text('\$500+', style: AppFonts.montserrat13BoldPrimary),
+                    Text('\$${_min.round()}', style: AppFonts.montserrat13BoldPrimary),
+                    Text('\$${_max.round()}', style: AppFonts.montserrat13BoldPrimary),
                   ],
                 ),
               ),
@@ -190,22 +190,22 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                 runSpacing: 12,
                 children: [
                   _BudgetChip(
-                    label: 'Under \$50',
+                    label: '\$200 - \$300',
                     isSelected: _selectedQuickIndex == 0,
                     onTap: () => _onQuickSelect(0),
                   ),
                   _BudgetChip(
-                    label: '\$50 - \$200',
+                    label: '\$300 - \$400',
                     isSelected: _selectedQuickIndex == 1,
                     onTap: () => _onQuickSelect(1),
                   ),
                   _BudgetChip(
-                    label: 'Premium',
+                    label: '\$400 - \$500',
                     isSelected: _selectedQuickIndex == 2,
                     onTap: () => _onQuickSelect(2),
                   ),
                   _BudgetChip(
-                    label: 'Luxury',
+                    label: '\$200 - \$500',
                     isSelected: _selectedQuickIndex == 3,
                     onTap: () => _onQuickSelect(3),
                   ),
@@ -216,16 +216,17 @@ class _SetBudgetViewState extends State<SetBudgetView> {
                 text: 'Find My Style',
                 showIcon: true,
                 icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                onPressed: () {
+                onPressed: () async {
                   final segmentKey = _segmentKeyForIndex(_selectedQuickIndex);
-                  context.read<UserCubit>().setBudget(
+                  final cubit = context.read<UserCubit>();
+                  await cubit.setBudget(
                     min: _values.start,
                     max: _values.end,
                     segment: segmentKey.isEmpty ? null : segmentKey,
                   );
+                  await cubit.getUserClothes();
 
-                  context.read<UserCubit>().getUserClothes();
-
+                  if (!context.mounted) return;
                   if (widget.isFromDrawer) {
                     Navigator.of(context).pop();
                   } else {
