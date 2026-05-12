@@ -25,13 +25,12 @@ class UserCubit extends Cubit<UserState> {
   SharedPreferences? _prefs;
 
   bool hasSeenOnboarding = false;
-  String? gender; // 'male' or 'female'
+  String? gender;
   String? topSize;
   String? bottomSize;
   double? minBudget;
   double? maxBudget;
   String? budgetSegment;
-  /// Max total price for all items in the cart combined (set on budget screen).
   double? totalCartBudget;
   List<ClothesModel> clothes = [];
   List<ClothesModel> clothesAfterFillter = [];
@@ -222,7 +221,6 @@ class UserCubit extends Cubit<UserState> {
   Future<void> logout() async {
     await Supabase.instance.client.auth.signOut();
 
-    // Clear user-specific data but preserve onboarding status
     await _prefs?.remove(_kGender);
     await _prefs?.remove(_kTopSize);
     await _prefs?.remove(_kBottomSize);
@@ -230,8 +228,7 @@ class UserCubit extends Cubit<UserState> {
     await _prefs?.remove(_kMaxBudget);
     await _prefs?.remove(_kBudgetSegment);
     await _prefs?.remove(_kTotalCartBudget);
-    await _prefs?.remove('remember_me'); // Clear remember me on logout
-
+    await _prefs?.remove('remember_me'); 
     gender = null;
     topSize = null;
     bottomSize = null;

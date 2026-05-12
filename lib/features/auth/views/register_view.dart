@@ -9,6 +9,7 @@ import 'package:smartfit/features/auth/cubit/auth_cubit.dart';
 import 'package:smartfit/features/auth/views/login_view.dart';
 import 'package:smartfit/features/auth/widgets/auth_header_widget.dart';
 import 'package:smartfit/features/auth/widgets/auth_text_form_field.dart';
+import 'package:smartfit/core/validators/auth_validators.dart';
 import 'package:smartfit/features/face_dect/views/detect_face_view.dart';
 
 class RegisterView extends StatefulWidget {
@@ -22,6 +23,7 @@ class _RegisterViewState extends State<RegisterView> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   bool _agreeFaceImage = false;
   bool _agreeBodyImage = false;
@@ -35,7 +37,20 @@ class _RegisterViewState extends State<RegisterView> {
   }
 
   void _onRegisterPressed() {
-    context.read<AuthCubit>().signUp(email: _emailController.text.trim(), password: _passwordController.text.trim());
+    if (_formKey.currentState!.validate()) {
+      if (!_agreeFaceImage || !_agreeBodyImage) {
+        showStyledDialog(
+          context,
+          title: 'Agreement Required',
+          message: 'Please agree to save your images to continue.',
+          isSuccess: false,
+        );
+        return;
+      }
+      context.read<AuthCubit>().signUp(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim());
+    }
   }
 
   @override
@@ -44,21 +59,24 @@ class _RegisterViewState extends State<RegisterView> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: AppConstants.appPadding,
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 40),
-                const AuthHeader(
-                  title: 'Create Account',
-                  subtitle: 'Set up your profile and get personalized fit picks.',
-                ),
-                const SizedBox(height: 28),
-                AuthTextFormField(
-                  hintText: 'Email address',
-                  keyboardType: TextInputType.emailAddress,
-                  prefix: const Icon(Icons.email_outlined),
-                  controller: _emailController,
-                ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 40),
+                  const AuthHeader(
+                    title: 'Create Account',
+                    subtitle: 'Set up your profile and get personalized fit picks.',
+                  ),
+                  const SizedBox(height: 28),
+                  AuthTextFormField(
+                    hintText: 'Email address',
+                    keyboardType: TextInputType.emailAddress,
+                    prefix: const Icon(Icons.email_outlined),
+                    controller: _emailController,
+                    validator: AuthValidators.email,
+                  ),
                 const SizedBox(height: 14),
                 Row(
                   children: [
@@ -85,6 +103,7 @@ class _RegisterViewState extends State<RegisterView> {
                         keyboardType: TextInputType.phone,
                         prefix: const Icon(Icons.phone_outlined),
                         controller: _phoneController,
+                        validator: AuthValidators.phoneEgypt,
                       ),
                     ),
                   ],
@@ -95,6 +114,7 @@ class _RegisterViewState extends State<RegisterView> {
                   obscureText: true,
                   prefix: const Icon(Icons.lock_outline_rounded),
                   controller: _passwordController,
+                  validator: AuthValidators.password,
                 ),
                 const SizedBox(height: 14),
                 CheckboxListTile(
@@ -190,6 +210,7 @@ class _RegisterViewState extends State<RegisterView> {
                 ),
               ],
             ),
+          ),
         ),
       ),
       backgroundColor: const Color(0xFFF5F7FA),

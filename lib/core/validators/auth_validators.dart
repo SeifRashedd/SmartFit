@@ -4,7 +4,6 @@ class AuthValidators {
     if (v.isEmpty) return message;
     return null;
   }
-
   static String? email(String? value) {
     final requiredErr = required(
       value,
@@ -17,7 +16,6 @@ class AuthValidators {
     if (!emailRegex.hasMatch(email)) return 'Enter a valid email';
     return null;
   }
-
   static String? password(String? value) {
     final requiredErr = required(
       value,
@@ -29,9 +27,6 @@ class AuthValidators {
     if (password.length < 6) return 'Password must be at least 6 characters';
     return null;
   }
-
-  /// Егypt local phone number without `+20`.
-  /// Example: `10xxxxxxxx` or `11xxxxxxxxx` (10–11 digits).
   static String? phoneEgypt(String? value) {
     final requiredErr = required(
       value,

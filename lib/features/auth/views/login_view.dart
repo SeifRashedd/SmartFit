@@ -10,6 +10,7 @@ import 'package:smartfit/features/auth/cubit/auth_cubit.dart';
 import 'package:smartfit/features/auth/views/register_view.dart';
 import 'package:smartfit/features/auth/widgets/auth_header_widget.dart';
 import 'package:smartfit/features/auth/widgets/auth_text_form_field.dart';
+import 'package:smartfit/core/validators/auth_validators.dart';
 import 'package:smartfit/features/user/views/home_view.dart';
 
 class LoginView extends StatefulWidget {
@@ -22,6 +23,7 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   bool _rememberMe = false;
 
@@ -33,10 +35,15 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void _onLoginPressed() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('remember_me', _rememberMe);
+    if (_formKey.currentState!.validate()) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('remember_me', _rememberMe);
 
-    context.read<AuthCubit>().signIn(email: _emailController.text.trim(), password: _passwordController.text.trim());
+      context.read<AuthCubit>().signIn(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+    }
   }
 
   @override
@@ -46,36 +53,41 @@ class _LoginViewState extends State<LoginView> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: AppConstants.appPadding,
-          child: Column(
+          child: Form(
+            key: _formKey,
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 40),
-
-                const AuthHeader(title: 'Welcome Back', subtitle: 'Sign in to continue your SmartFit journey.'),
-
+                const AuthHeader(
+                  title: 'Welcome Back',
+                  subtitle: 'Sign in to continue your SmartFit journey.',
+                ),
                 const SizedBox(height: 28),
-
                 AuthTextFormField(
                   hintText: 'Email address',
                   keyboardType: TextInputType.emailAddress,
                   prefix: const Icon(Icons.email_outlined),
                   controller: _emailController,
+                  validator: AuthValidators.email,
                 ),
-
                 const SizedBox(height: 14),
-
                 AuthTextFormField(
                   hintText: 'Password',
                   obscureText: true,
                   prefix: const Icon(Icons.lock_outline_rounded),
                   controller: _passwordController,
+                  validator: AuthValidators.password,
                 ),
 
                 const SizedBox(height: 10),
 
                 /// 🔥 Remember Me Checkbox
                 CheckboxListTile(
-                  visualDensity: const VisualDensity(horizontal: -2, vertical: -3),
+                  visualDensity: const VisualDensity(
+                    horizontal: -2,
+                    vertical: -3,
+                  ),
                   contentPadding: EdgeInsets.zero,
                   dense: true,
                   controlAffinity: ListTileControlAffinity.leading,
@@ -87,7 +99,10 @@ class _LoginViewState extends State<LoginView> {
                       _rememberMe = value ?? false;
                     });
                   },
-                  title: Text('Remember me', style: AppFonts.montserrat14Regular64748B),
+                  title: Text(
+                    'Remember me',
+                    style: AppFonts.montserrat14Regular64748B,
+                  ),
                 ),
 
                 const SizedBox(height: 12),
@@ -109,7 +124,12 @@ class _LoginViewState extends State<LoginView> {
                         },
                       );
                     } else if (state is SignInFailure) {
-                      showStyledDialog(context, title: 'Login Failed', message: state.errorMessage, isSuccess: false);
+                      showStyledDialog(
+                        context,
+                        title: 'Login Failed',
+                        message: state.errorMessage,
+                        isSuccess: false,
+                      );
                     }
                   },
                   builder: (context, state) {
@@ -129,17 +149,28 @@ class _LoginViewState extends State<LoginView> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Don\'t have an account? ', style: AppFonts.montserrat14Regular64748B),
+                    Text(
+                      'Don\'t have an account? ',
+                      style: AppFonts.montserrat14Regular64748B,
+                    ),
                     GestureDetector(
                       onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const RegisterView()));
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const RegisterView(),
+                          ),
+                        );
                       },
-                      child: Text('Register', style: AppFonts.montserrat13BoldPrimary),
+                      child: Text(
+                        'Register',
+                        style: AppFonts.montserrat13BoldPrimary,
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
+          ),
         ),
       ),
     );
