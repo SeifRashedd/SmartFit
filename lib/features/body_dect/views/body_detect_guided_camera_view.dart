@@ -24,6 +24,7 @@ class _BodyDetectGuidedCameraViewState extends State<BodyDetectGuidedCameraView>
   String? _error;
   bool _isCapturing = false;
   bool _isSwitchingCamera = false;
+  bool _isClosing = false;
   bool _frameFilled = false;
   Timer? _autoCheckTimer;
   bool _isCheckingFrame = false;
@@ -41,20 +42,55 @@ class _BodyDetectGuidedCameraViewState extends State<BodyDetectGuidedCameraView>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (_controller == null || !_controller!.value.isInitialized) return;
+    if (_isClosing ||
+        _controller == null ||
+        !_controller!.value.isInitialized) {
+      return;
+    }
     if (state == AppLifecycleState.inactive) {
-      _controller?.dispose();
-      _controller = null;
-    } else if (state == AppLifecycleState.resumed) {
+      unawaited(_releaseCamera());
+    } else if (state == AppLifecycleState.resumed && !_isSwitchingCamera) {
       _initCamera();
     }
   }
 
+  Future<void> _releaseCamera() async {
+    if (_controller == null) return;
+    _stopAutoCaptureCheck();
+    await _waitForFrameCheck();
+    final controller = _controller;
+    _controller = null;
+    try {
+      await controller?.dispose();
+    } catch (_) {
+      // Some Android devices throw if the session is already closing.
+    }
+  }
+
+  Future<void> _close() async {
+    if (_isClosing) return;
+    _isClosing = true;
+    await _releaseCamera();
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  Future<void> _finishWithResult(File file) async {
+    if (_isClosing) return;
+    _isClosing = true;
+    await _releaseCamera();
+    if (mounted) Navigator.of(context).pop(file);
+  }
+
   @override
   void dispose() {
-    _autoCheckTimer?.cancel();
+    _isClosing = true;
+    _stopAutoCaptureCheck();
     WidgetsBinding.instance.removeObserver(this);
-    _controller?.dispose();
+    final controller = _controller;
+    _controller = null;
+    if (controller != null) {
+      unawaited(controller.dispose().catchError((_) {}));
+    }
     super.dispose();
   }
 
@@ -108,11 +144,26 @@ class _BodyDetectGuidedCameraViewState extends State<BodyDetectGuidedCameraView>
         spanY > AppConstants.personFillMinSpanY;
   }
 
-  void _startAutoCaptureCheck() {
+  void _stopAutoCaptureCheck() {
     _autoCheckTimer?.cancel();
+    _autoCheckTimer = null;
+  }
+
+  Future<void> _waitForFrameCheck({Duration timeout = const Duration(seconds: 3)}) async {
+    final deadline = DateTime.now().add(timeout);
+    while (_isCheckingFrame && DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      if (!mounted) return;
+    }
+  }
+
+  void _startAutoCaptureCheck() {
+    _stopAutoCaptureCheck();
     setState(() => _countdown = 5);
     _autoCheckTimer = Timer.periodic(const Duration(seconds: 1), (_) async {
       if (!mounted ||
+          _isClosing ||
+          _isSwitchingCamera ||
           _controller == null ||
           !_controller!.value.isInitialized ||
           _isCapturing ||
@@ -124,17 +175,18 @@ class _BodyDetectGuidedCameraViewState extends State<BodyDetectGuidedCameraView>
       _isCheckingFrame = true;
       try {
         final xFile = await _controller!.takePicture();
+        if (!mounted || _isClosing || _isSwitchingCamera) return;
         final file = File(xFile.path);
         final k = _poseService.detectPose(file);
-        if (!mounted) return;
+        if (!mounted || _isClosing || _isSwitchingCamera) return;
         final filled = _personFillsFrame(k);
         if (filled) {
           if (_countdown <= 1) {
-            _autoCheckTimer?.cancel();
-            setState(() => _frameFilled = true);
+            _stopAutoCaptureCheck();
+            if (mounted) setState(() => _frameFilled = true);
             await Future<void>.delayed(const Duration(milliseconds: 800));
             if (!mounted) return;
-            Navigator.of(context).pop(file);
+            await _finishWithResult(file);
             return;
           }
           setState(() => _countdown = _countdown - 1);
@@ -142,13 +194,17 @@ class _BodyDetectGuidedCameraViewState extends State<BodyDetectGuidedCameraView>
           setState(() => _countdown = 5);
         }
       } catch (_) {
-        if (mounted) setState(() => _countdown = 5);
+        if (mounted && !_isClosing && !_isSwitchingCamera) {
+          setState(() => _countdown = 5);
+        }
+      } finally {
+        _isCheckingFrame = false;
       }
-      if (mounted) _isCheckingFrame = false;
     });
   }
 
   Future<void> _initCamera() async {
+    if (_isClosing) return;
     if (_cameras.isEmpty) {
       try {
         _cameras = await availableCameras();
@@ -201,19 +257,32 @@ class _BodyDetectGuidedCameraViewState extends State<BodyDetectGuidedCameraView>
 
   Future<void> _switchCamera() async {
     if (_cameras.length < 2 || _isSwitchingCamera) return;
-    final oldController = _controller;
+
     setState(() {
       _isSwitchingCamera = true;
       _initialized = false;
-      _controller = null;
+      _countdown = 5;
     });
-    await oldController?.dispose();
+    _stopAutoCaptureCheck();
+    await _waitForFrameCheck();
+
+    final oldController = _controller;
+    _controller = null;
+    try {
+      await oldController?.dispose();
+    } catch (_) {
+      // Some Android devices throw if the session is already closing.
+    }
+
+    if (!mounted) return;
     _useFrontCamera = !_useFrontCamera;
     await _initCamera();
   }
 
   Future<void> _capture() async {
-    if (_controller == null ||
+    if (_isClosing ||
+        _isSwitchingCamera ||
+        _controller == null ||
         !_controller!.value.isInitialized ||
         _isCapturing) {
       return;
@@ -222,7 +291,7 @@ class _BodyDetectGuidedCameraViewState extends State<BodyDetectGuidedCameraView>
     try {
       final xFile = await _controller!.takePicture();
       if (!mounted) return;
-      Navigator.of(context).pop(File(xFile.path));
+      await _finishWithResult(File(xFile.path));
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -234,7 +303,13 @@ class _BodyDetectGuidedCameraViewState extends State<BodyDetectGuidedCameraView>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop || _isClosing) return;
+        unawaited(_close());
+      },
+      child: Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
         child: Stack(
@@ -298,7 +373,7 @@ class _BodyDetectGuidedCameraViewState extends State<BodyDetectGuidedCameraView>
                   children: [
                     IconButton(
                       icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: _isClosing ? null : () => unawaited(_close()),
                     ),
                     Expanded(
                       child: Text(
@@ -381,6 +456,7 @@ class _BodyDetectGuidedCameraViewState extends State<BodyDetectGuidedCameraView>
           ],
         ),
       ),
+    ),
     );
   }
 
