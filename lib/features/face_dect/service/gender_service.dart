@@ -17,7 +17,6 @@ class GenderService {
       _interpreter = await Interpreter.fromAsset(modelPath);
 
       final in0 = _interpreter!.getInputTensors().first;
-      final out0 = _interpreter!.getOutputTensors().first;
       developer.log('[GenderService] Input[0] shape: ${in0.shape}, type: ${in0.type}', name: 'GenderService');
 
       _faceDetector ??= FaceDetector(
