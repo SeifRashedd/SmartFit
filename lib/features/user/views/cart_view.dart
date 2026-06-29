@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smartfit/core/constants/app_constants.dart';
 import 'package:smartfit/core/styles/app_colors.dart';
 import 'package:smartfit/core/styles/app_fonts.dart';
+import 'package:smartfit/core/widgets/custom_button.dart';
 import 'package:smartfit/features/user/logic/cubit/user_cubit.dart';
+import 'package:smartfit/features/user/views/checkout_view.dart';
 import 'package:smartfit/features/user/views/item_details_view.dart';
 import 'package:smartfit/features/user/widgets/home_view_item.dart';
 
@@ -174,6 +176,21 @@ class CartView extends StatelessWidget {
                           ],
                         ],
                       ),
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: AppConstants.appPadding.copyWith(top: 8),
+                    child: CustomButton(
+                      text: 'Checkout',
+                      showIcon: true,
+                      icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const CheckoutView()),
+                        );
+                      },
                     ),
                   ),
                 ),
