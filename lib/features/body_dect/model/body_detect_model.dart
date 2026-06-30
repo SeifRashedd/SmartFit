@@ -145,8 +145,8 @@ class BodyDetectModel extends ChangeNotifier {
         name: 'BodyDetectModel',
       );
 
-      topSize = _decreaseSizeBy(_mapTopSize(upperRatio!), 2);
-      bottomSize = _decreaseSizeBy(_mapBottomSize(lowerRatio!), 1);
+      topSize = _mapTopSize(upperRatio!);
+      bottomSize = _increaseSizeBy(_mapBottomSize(lowerRatio!), 1);
 
       developer.log(
         'Sizes — Top: $topSize, Bottom: $bottomSize',
@@ -279,14 +279,14 @@ class BodyDetectModel extends ChangeNotifier {
     return 'XXXL';
   }
 
-  /// Decreases a clothing size by [steps] positions.
-  /// Example: XXXL -2 => XL, XL -1 => L. Floor is always S.
-  String _decreaseSizeBy(String size, int steps) {
-    const orderedSizes = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+  /// Increases a clothing size by [steps] positions.
+  /// Example: S +1 => M, M +1 => L. Ceiling is always XXXL.
+  String _increaseSizeBy(String size, int steps) {
+    const orderedSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
     final normalized = size.toUpperCase();
     final index = orderedSizes.indexOf(normalized);
     if (index == -1) return normalized;
-    final shiftedIndex = (index - steps).clamp(0, orderedSizes.length - 1);
+    final shiftedIndex = (index + steps).clamp(0, orderedSizes.length - 1);
     return orderedSizes[shiftedIndex];
   }
 }
